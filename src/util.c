@@ -4,6 +4,8 @@
 #include <sys/cpuset.h>
 #include <unistd.h>
 
+#include <ps5/kernel.h>
+
 #include "debug_log.h"
 #include "util.h"
 
@@ -28,6 +30,32 @@ void pin_to_first_available_core()
 int get_cpu_core()
 {
     return sceKernelGetCurrentCpu();
+}
+
+void kernel_write8(uint64_t addr, uint64_t val)
+{
+    uint64_t val_to_write = val;
+    kernel_copyin(&val_to_write, addr, sizeof(val_to_write));
+}
+
+void kernel_write4(uint64_t addr, uint32_t val)
+{
+    uint32_t val_to_write = val;
+    kernel_copyin(&val_to_write, addr, sizeof(val_to_write));
+}
+
+uint64_t kernel_read8(uint64_t addr)
+{
+    uint64_t val;
+    kernel_copyout(addr, &val, sizeof(val));
+    return val;
+}
+
+uint32_t kernel_read4(uint64_t addr)
+{
+    uint32_t val;
+    kernel_copyout(addr, &val, sizeof(val));
+    return val;
 }
 
 void DumpHex(const void* data, size_t size) {

