@@ -143,6 +143,13 @@ int main()
         g_debug_sock = debug_sock;
 	}
 
+    // Do fw support check
+    SOCK_LOG("[+] Detected FW: 0x%x\n", kernel_get_fw_version());
+    if (kdlsym(KERNEL_SYM_HV_JMP_TABLE) == 0) {
+        SOCK_LOG("[!] FW 0x%x is not supported\n", kernel_get_fw_version());
+        return -1;
+    }
+
     // Kernel ROP gadgets for 2.xx firmware
     uint64_t hv_rop_chain_2xx[] = {
         0x0,
