@@ -13,7 +13,7 @@ CFLAGS := -Wall -Werror -g -I./include
 
 all: $(ELF)
 
-$(ELF): src/main.c src/bump_alloc.c src/kdlsym.c src/krop.c src/mirror.c src/notify.c src/paging.c src/util.c
+$(ELF): src/main.c src/kpatch.c src/kdlsym.c src/paging.c src/self.c src/util.c
 	$(CC) $(CFLAGS) -o $@ $^
 
 clean:
