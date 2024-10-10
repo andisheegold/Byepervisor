@@ -31,6 +31,9 @@ struct self_rpc_ctrl_header {
 // Decrypt self command. Request is file path, response is file data.
 #define SELF_CMD_DECRYPT_SELF                       5
 
+// Copy file command. Request is file paths, no response data.
+#define SELF_CMD_COPY_FILE                          6
+
 int run_self_server(int port);
 
 /*
@@ -62,5 +65,6 @@ struct sce_self_segment_header {
 
 int decrypt_self(char *path, char **out_data, int *out_size);
 int get_self_list(char *dir, char **out_buf, int *out_size);
+int copy_file(char *paths);
 
 #endif // SELF_H

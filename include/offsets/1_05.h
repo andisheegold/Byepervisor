@@ -9,4 +9,11 @@ uint64_t g_sym_map_105[] = {
     0x7980000,          // KERNEL_SYM_DATA_CAVE
 };
 
+uint64_t g_patch_map_105[] = {
+    0x05A9C20,          // KERNEL_PATCH_HAS_MMAP_SELF_CAPABILITY
+    0x05A9C30,          // KERNEL_PATCH_IS_ALLOWED_TO_MMAP_SELF
+    0x0981909,          // KERNEL_PATCH_MMAP_SELF_CALL_IS_LOADABLE
+    0x02F17D0,          // KERNEL_PATCH_SYS_GETGID
+};
+
 #endif // OFFSETS_1_05_H

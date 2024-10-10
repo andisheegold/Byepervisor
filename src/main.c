@@ -14,8 +14,8 @@
 #include "config.h"
 #include "debug_log.h"
 #include "kdlsym.h"
-#include "kpatch.h"
 #include "paging.h"
+#include "patching.h"
 #include "self.h"
 #include "util.h"
 
@@ -184,13 +184,11 @@ int main()
     }
 
     // Apply patches
-    SOCK_LOG("[+] Test pre-patch  sys_getgid: 0x%x\n", getgid());
-    patch_get_gid();
-    SOCK_LOG("[+] Test post-patch sys_getgid: 0x%x\n", getgid());
-
-    SOCK_LOG("[+] Patching to allow mmap MAP_SELF...\n");
-    patch_enable_mmap_self();
-    run_self_server(9004);
+    if (apply_kernel_patches() != 0) {
+        SOCK_LOG("[!] Applying kernel patches failed, firmware likely not supported\n");
+        return -1;
+    }
+    //run_self_server(9010);
 
     // run_dump_server(9003);
     return 0;

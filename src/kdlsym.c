@@ -90,6 +90,8 @@ uint64_t kdlpatch(kpatch_t patch)
         return 0;
 
     switch (g_fw_version) {
+    case 0x1050000:
+        return g_kernel_base + g_patch_map_105[patch];
     case 0x2500000:
         return g_kernel_base + g_patch_map_250[patch];
     }

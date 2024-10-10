@@ -16,7 +16,6 @@
 #include "debug_log.h"
 #include "elf.h"
 #include "kdlsym.h"
-#include "kpatch.h"
 #include "paging.h"
 #include "self.h"
 #include "util.h"
@@ -108,7 +107,7 @@ int decrypt_self(char *path, char **out_data, int *out_size)
             SOCK_LOG("decrypt_self: done\n");
         }
 
-        if (cur_phdr->p_type == PT_NOTE) {
+        if (cur_phdr->p_type == 0x6FFFFF00) {
             lseek(self_fd, cur_phdr->p_offset, SEEK_SET);
             read(self_fd, &note_buf, cur_phdr->p_filesz);
             memcpy(out_file_data + cur_phdr->p_offset, note_buf, cur_phdr->p_filesz);
@@ -188,6 +187,8 @@ int get_self_list(char *dir, char **out_buf, int *out_size)
                 out_buf_cur  += file_name_size;
                 out_buf_size += file_name_size;
             }
+
+            close(file_fd);
         }
 
         entry = (struct dirent *) ((char *) entry + entry->d_reclen);
@@ -204,6 +205,48 @@ int get_self_list(char *dir, char **out_buf, int *out_size)
 
     // Close directory
     sceKernelClose(dir_fd);
+    return 0;
+}
+
+int copy_file(char *paths)
+{
+    int in_fd;
+    int out_fd;
+    ssize_t read_bytes;
+    ssize_t written_bytes;
+    char *in_path;
+    char *out_path;
+    char buf[0x1000];
+
+    in_path = paths;
+    out_path = paths + (strlen(paths) + 1);
+
+    SOCK_LOG("[+] copy_file(%s, %s)\n", in_path, out_path);
+
+    in_fd = open(in_path, O_RDONLY);
+    if (in_fd < 0)
+        return in_fd;
+
+    remove(out_path);
+
+    out_fd = open(out_path, O_RDWR | O_CREAT);
+        SOCK_LOG("tst2 = 0x%x (%s)\n", out_fd, strerror(errno));
+        if (out_fd < 0)
+            return out_fd;
+
+    SOCK_LOG("  [+] in_fd = 0x%x, out_fd = 0x%x\n", in_fd, out_fd);
+
+    while ((read_bytes = read(in_fd, buf, sizeof(buf))) > 0) {
+        written_bytes = write(out_fd, buf, read_bytes);
+        if (written_bytes != read_bytes) {
+            SOCK_LOG("[!] failed to copy file (%ld != %ld) (%s)\n", written_bytes, read_bytes, strerror(errno));
+            break;
+        }
+    }
+
+    close(in_fd);
+    close(out_fd);
+
     return 0;
 }
 
@@ -318,6 +361,11 @@ int handle_self_cmd(int client, int cmd, char *in_data, char **out_data_ptr, int
     case SELF_CMD_DECRYPT_SELF:
         SOCK_LOG("[SRV] [SELF] [%d] received decrypt self request\n", client);
         status   = decrypt_self(in_data, out_data_ptr, &resp_len);
+        break;
+    case SELF_CMD_COPY_FILE:
+        SOCK_LOG("[SRV] [SELF] [%d] received copy file request\n", client);
+        status   = copy_file(in_data);
+        resp_len = 0;
         break;
     }
 
