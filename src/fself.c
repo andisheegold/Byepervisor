@@ -5,12 +5,6 @@
 #include <string.h>
 
 /**
- * @brief This is just here to prevent errors, too lazy to remove logging
- * 
- */
-#define WriteLog(x, y, ...)
-
-/**
  * @brief The exec authentication information
  * 
  */
