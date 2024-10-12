@@ -1,13 +1,13 @@
 #include "fself.h"
 #include "kdlsym.h"
 #include <sys/errno.h>
-#include <sys/elf.h>
+#include <stdio.h>
+#include <string.h>
 
 /**
  * @brief This is just here to prevent errors, too lazy to remove logging
  * 
  */
-*/
 #define WriteLog(x, y, ...)
 
 /**
@@ -56,7 +56,7 @@ const uint8_t c_DynlibAuthInfo[] =
 int OnSceSblAuthMgrIsLoadable2(SelfContext* p_Context, SelfAuthInfo* p_OldAuthInfo, int32_t p_PathId, SelfAuthInfo* p_NewAuthInfo)
 {
     // I freaking hate C
-    (int(*)(SelfContext*, SelfAuthInfo*, int32_t, SelfAuthInfo*)) sceSblAuthMgrIsLoadable2 = (int(*)(SelfContext* p_Context, SelfAuthInfo* p_OldAuthInfo, int32_t p_PathId, SelfAuthInfo* p_NewAuthInfo))kdlsym(sceSblAuthMgrIsLoadable2);
+    auto sceSblAuthMgrIsLoadable2 = (int(*)(SelfContext* p_Context, SelfAuthInfo* p_OldAuthInfo, int32_t p_PathId, SelfAuthInfo* p_NewAuthInfo))kdlsym(KERNEL_SYM_SCESBLAUTHMGRISLOADABLE2);
 
     if (p_Context == NULL)
     {
@@ -76,7 +76,7 @@ int OnSceSblAuthMgrIsLoadable2(SelfContext* p_Context, SelfAuthInfo* p_OldAuthIn
         return sceSblAuthMgrIsLoadable2(p_Context, p_OldAuthInfo, p_PathId, p_NewAuthInfo);
     }
     
-    if (p_Context->format == SelfFormat::Elf || IsFakeSelf(p_Context))
+    if (p_Context->format == SF_Elf || IsFakeSelf(p_Context))
     {
         WriteLog(LL_Debug, "building fake self information");
         return BuildFakeSelfAuthInfo(p_Context, p_OldAuthInfo, p_NewAuthInfo);
@@ -89,12 +89,12 @@ int OnSceSblAuthMgrIsLoadable2(SelfContext* p_Context, SelfAuthInfo* p_OldAuthIn
 /**
  * @brief Checks if the current self format is FSelf or Regular
  * 
- * @param p_Context Self Context
+ * @param p_Context SF_Self Context
  * @return int32_t True if fself, false otherwise
  */
 int32_t IsFakeSelf(SelfContext* p_Context)
 {
-    (int (*)(SelfContext* ctx, void *exInfo)) _sceSblAuthMgrGetSelfInfo = (int (*)(SelfContext* ctx, void *exInfo))kdlsym(_sceSblAuthMgrGetSelfInfo);
+    auto _sceSblAuthMgrGetSelfInfo = (int (*)(SelfContext* ctx, void *exInfo))kdlsym(KERNEL_SYM_SCESBLAUTHMGRGETSELFINFO);
     if (p_Context == NULL)
     {
         WriteLog(LL_Error, "invalid context");
@@ -102,7 +102,7 @@ int32_t IsFakeSelf(SelfContext* p_Context)
     }
     
     SelfExInfo* s_Info = NULL;
-    if (p_Context->format == SelfFormat::Self)
+    if (p_Context->format == SF_Self)
     {
         if (_sceSblAuthMgrGetSelfInfo(p_Context, &s_Info))
             return false;
@@ -115,7 +115,7 @@ int32_t IsFakeSelf(SelfContext* p_Context)
 
 int32_t BuildFakeSelfAuthInfo(SelfContext* p_Context, SelfAuthInfo* p_ParentAuthInfo, SelfAuthInfo* p_AuthInfo)
 {
-    (int (*)(SelfContext* ctx, void *exInfo)) _sceSblAuthMgrGetSelfInfo = (int (*)(SelfContext* ctx, void *exInfo))kdlsym(_sceSblAuthMgrGetSelfInfo);
+    auto _sceSblAuthMgrGetSelfInfo = (int (*)(SelfContext* ctx, void *exInfo))kdlsym(KERNEL_SYM_SCESBLAUTHMGRGETSELFINFO);
 
     if (p_Context == NULL || p_ParentAuthInfo == NULL || p_AuthInfo == NULL)
     {
@@ -179,4 +179,71 @@ int32_t BuildFakeSelfAuthInfo(SelfContext* p_Context, SelfAuthInfo* p_ParentAuth
     memcpy(p_AuthInfo, &s_FakeAuthInfo, sizeof(*p_AuthInfo));
 
     return s_Result;
+}
+
+int32_t SceSblAuthMgrGetElfHeader(SelfContext* p_Context, Elf64_Ehdr** p_OutElfHeader)
+{
+    if (p_Context == nullptr)
+        return -EAGAIN;
+    
+    if (p_Context->format == SF_Elf)
+    {
+        // WriteLog(LL_Debug, "elf format");
+        auto s_ElfHeader = (Elf64_Ehdr*)(p_Context->header);
+        if (s_ElfHeader != nullptr)
+            *p_OutElfHeader = s_ElfHeader;
+        
+        return 0;
+    }
+    else if (p_Context->format == SF_Self)
+    {
+        // WriteLog(LL_Debug, "self format");
+        struct self_header_t* s_SelfHeader = (struct self_header_t*)(p_Context->header);
+        size_t s_PdataSize = s_SelfHeader->header_size - sizeof(struct self_entry_t) * s_SelfHeader->num_entries - sizeof(struct self_header_t);
+        if (s_PdataSize >= sizeof(Elf64_Ehdr) && (s_PdataSize & 0xF) == 0)
+        {
+            auto s_ElfHeader = (Elf64_Ehdr*)(((uint8_t*)s_SelfHeader + sizeof(SelfHeader)) + (sizeof(SelfEntry) * s_SelfHeader->num_entries));
+            if (s_ElfHeader)
+                *p_OutElfHeader = s_ElfHeader;
+            
+            return 0;
+        }
+
+        return -EALREADY;
+    }
+
+    return -EAGAIN;
+}
+
+int32_t SceSblAuthMgrGetSelfAuthInfoFake(SelfContext* p_Context, SelfAuthInfo* p_Info)
+{
+    if (p_Context == nullptr)
+    {
+        WriteLog(LL_Error, "invalid context");
+        return -EAGAIN;
+    }
+
+    if (p_Info == nullptr)
+    {
+        WriteLog(LL_Error, "invalid self auth info.");
+        return -EAGAIN;
+    }
+    
+    if (p_Context->format == SF_Elf)
+    {
+        WriteLog(LL_Error, "invalid format");
+        return -EAGAIN;
+    }
+    
+    SelfHeader* s_Header = p_Context->header;
+    const char* s_Data = (const char*)(p_Context->header);
+    const SelfFakeAuthInfo* s_FakeInfo = (const SelfFakeAuthInfo*)(s_Data + s_Header->header_size + s_Header->meta_size - 0x100);
+    if (s_FakeInfo->size == sizeof(s_FakeInfo->info))
+    {
+        memcpy(p_Info, &s_FakeInfo->info, sizeof(*p_Info));
+        return 0;
+    }
+
+    // WriteLog(LL_Error, "ealready (no valid authinfo)");
+    return -EALREADY;
 }

@@ -9,7 +9,7 @@ endif
 
 ELF := byepervisor.elf
 
-CFLAGS := -Wall -Werror -g -I./include
+CFLAGS := -std=c23 -Wall -Werror -g -I./include
 
 all: $(ELF)
 
