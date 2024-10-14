@@ -9,12 +9,12 @@ endif
 
 ELF := byepervisor.elf
 
-CFLAGS := -std=c23 -Wall -Werror -g -I./include
+CFLAGS := -std=c++11 -Wall -Werror -g -I./include
 
 all: $(ELF)
 
-$(ELF): src/main.c  src/kdlsym.c src/paging.c src/patching.c src/self.c src/util.c src/fself.c src/fpkg.c
-	$(CC) $(CFLAGS) -o $@ $^
+$(ELF): src/main.cpp src/kdlsym.cpp src/paging.cpp src/patching.cpp src/self.cpp src/util.cpp src/fself.cpp src/fpkg.cpp
+	$(CXX) $(CFLAGS) -o $@ $^
 
 clean:
 	rm -f $(ELF)

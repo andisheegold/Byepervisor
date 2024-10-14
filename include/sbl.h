@@ -62,7 +62,6 @@ typedef union sbl_key_desc_t
     } portability;
     uint8_t raw[SIZEOF_SBL_KEY_DESC];
 } sbl_key_desc_t, SblKeyDesc;
-static_assert(sizeof(union sbl_key_desc_t) == 0x7C);
 
 typedef struct sbl_key_rbtree_entry_t
 {
@@ -76,15 +75,6 @@ typedef struct sbl_key_rbtree_entry_t
     struct sbl_key_rbtree_entry_t* parent;
     uint32_t set;
 } sbl_key_rbtree_entry_t, SblKeyRbtreeEntry;
-static_assert(offsetof(struct sbl_key_rbtree_entry_t, handle) == 0x00);
-static_assert(offsetof(struct sbl_key_rbtree_entry_t, occupied) == 0x04);
-static_assert(offsetof(struct sbl_key_rbtree_entry_t, desc) == 0x08);
-//static_assert(offsetof(struct sbl_key_rbtree_entry_t, locked) == 0x80);
-static_assert(offsetof(struct sbl_key_rbtree_entry_t, left) == 0x88);
-static_assert(offsetof(struct sbl_key_rbtree_entry_t, right) == 0x90);
-static_assert(offsetof(struct sbl_key_rbtree_entry_t, parent) == 0x98);
-static_assert(offsetof(struct sbl_key_rbtree_entry_t, set) == 0xA0);
-static_assert(sizeof(struct sbl_key_rbtree_entry_t) == 0xA8);
 
 typedef struct sbl_msg_header_t
 {

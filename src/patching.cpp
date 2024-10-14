@@ -5,7 +5,10 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+extern "C"
+{
 #include <ps5/kernel.h>
+}
 
 #include "debug_log.h"
 #include "kdlsym.h"

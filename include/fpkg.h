@@ -6,15 +6,6 @@
 struct sx;
 struct fpu_kern_ctx;
 
-const uint8_t g_ypkg_p[0x80];
-const uint8_t g_ypkg_q[0x80];
-const uint8_t g_ypkg_dmp1[0x80];
-const uint8_t g_ypkg_dmq1[0x80];
-const uint8_t g_ypkg_iqmp[0x80];
-
-const uint8_t g_RifDebugKey[0x10];
-const uint8_t g_FakeKeySeed[0x10];
-
 static void GenPfsCryptoKey(uint8_t* p_EncryptionKeyPFS, uint8_t p_Seed[PFS_SEED_SIZE], uint32_t p_Index, uint8_t p_Key[PFS_FINAL_KEY_SIZE]);
 static void GenPfsEncKey(uint8_t* p_EncryptionKeyPFS, uint8_t p_Seed[PFS_SEED_SIZE], uint8_t p_Key[PFS_FINAL_KEY_SIZE]);
 static void GenPfsSignKey(uint8_t* p_EncryptionKeyPFS, uint8_t p_Seed[PFS_SEED_SIZE], uint8_t p_Key[PFS_FINAL_KEY_SIZE]);

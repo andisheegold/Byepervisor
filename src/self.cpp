@@ -10,7 +10,10 @@
 #include <errno.h>
 #include <dirent.h>
 
+extern "C"
+{
 #include <ps5/kernel.h>
+}
 
 #include "config.h"
 #include "debug_log.h"
@@ -20,9 +23,12 @@
 #include "self.h"
 #include "util.h"
 
-int sceKernelOpen(const char *, int, int);
-int sceKernelClose(int);
-int sceKernelGetdents(int, char *, int);
+extern "C"
+{
+    int sceKernelOpen(const char *, int, int);
+    int sceKernelClose(int);
+    int sceKernelGetdents(int, char *, int);
+}
 
 int g_die;
 
@@ -34,8 +40,8 @@ int decrypt_self(char *path, char **out_data, int *out_size)
     struct elf64_phdr *start_phdrs;
     struct elf64_phdr *cur_phdr;
     struct sce_self_header *header;
-    void *self_file_data;
-    void *out_file_data;
+    char *self_file_data;
+    char *out_file_data;
     void *segment_data;
     char note_buf[0x1000];
 
@@ -46,7 +52,7 @@ int decrypt_self(char *path, char **out_data, int *out_size)
     if (self_fd < 0)
         return self_fd;
 
-    self_file_data = mmap(NULL, 0x1000, PROT_READ, MAP_SHARED, self_fd, 0);
+    self_file_data = (char *) mmap(NULL, 0x1000, PROT_READ, MAP_SHARED, self_fd, 0);
     if (self_file_data == MAP_FAILED) {
         close(self_fd);
         return -ENOMEM;
@@ -75,7 +81,7 @@ int decrypt_self(char *path, char **out_data, int *out_size)
     }
 
     // Map buffer for output data
-    out_file_data = mmap(NULL, final_file_size, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+    out_file_data = (char *) mmap(NULL, final_file_size, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
     if (out_file_data == MAP_FAILED) {
         munmap(self_file_data, 0x1000);
         close(self_fd);
@@ -131,7 +137,7 @@ int get_self_list(char *dir, char **out_buf, int *out_size)
     int magic;
     char file_path[0x100];
     int file_name_size;
-    void *dirent_buf;
+    char *dirent_buf;
     struct dirent *entry;
     char *out_buf_cur;
     int out_buf_size;
@@ -144,7 +150,7 @@ int get_self_list(char *dir, char **out_buf, int *out_size)
         return dir_fd;
 
     // Map buffer for dirents
-    dirent_buf = mmap(NULL, 0x40000, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+    dirent_buf = (char *) mmap(NULL, 0x40000, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
     if (dirent_buf == MAP_FAILED) {
         sceKernelClose(dir_fd);
         return -ENOMEM;

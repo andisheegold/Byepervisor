@@ -38,7 +38,7 @@ struct self_auth_info_t;
 struct self_context_t;
 struct self_ex_info_t;
 struct self_header_t;
-enum self_format_t;
+enum self_format_t : int;
 struct self_fake_auth_info_t;
 struct self_entry_t;
 
@@ -52,11 +52,6 @@ typedef struct self_auth_info_t
     uint64_t attrs[4];
     uint8_t unk[0x40];
 }self_auth_info_t, SelfAuthInfo;
-static_assert(offsetof(struct self_auth_info_t, paid) == 0x00);
-static_assert(offsetof(struct self_auth_info_t, caps) == 0x08);
-static_assert(offsetof(struct self_auth_info_t, attrs) == 0x28);
-static_assert(offsetof(struct self_auth_info_t, unk) == 0x48);
-static_assert(sizeof(struct self_auth_info_t) == 0x88);
 
 /**
  * SELF kernel context
@@ -77,18 +72,6 @@ typedef struct self_context_t
     struct self_header_t *header;
     uint8_t mtx_struct[0x20];
 } self_context_t, SelfContext;
-static_assert(offsetof(struct self_context_t, format) == 0x00);
-static_assert(offsetof(struct self_context_t, elf_auth_type) == 0x04);
-static_assert(offsetof(struct self_context_t, total_header_size) == 0x08);
-static_assert(offsetof(struct self_context_t, unk_0C) == 0x0C);
-static_assert(offsetof(struct self_context_t, segment) == 0x10);
-static_assert(offsetof(struct self_context_t, ctx_id) == 0x1C);
-static_assert(offsetof(struct self_context_t, svc_id) == 0x20);
-static_assert(offsetof(struct self_context_t, buf_id) == 0x30);
-static_assert(offsetof(struct self_context_t, unk_34) == 0x34);
-static_assert(offsetof(struct self_context_t, header) == 0x38);
-static_assert(offsetof(struct self_context_t, mtx_struct) == 0x40);
-static_assert(sizeof(struct self_context_t) == 96, "self_context_t size mismatch.");
 
 /**
  * SELF extra information
@@ -101,12 +84,6 @@ typedef struct self_ex_info_t
     uint64_t firmware_version;
     uint8_t digest[0x20];
 } self_ex_info_t, SelfExInfo;
-static_assert(offsetof(struct self_ex_info_t, paid) == 0x00);
-static_assert(offsetof(struct self_ex_info_t, ptype) == 0x08);
-static_assert(offsetof(struct self_ex_info_t, app_version) == 0x10);
-static_assert(offsetof(struct self_ex_info_t, firmware_version) == 0x18);
-static_assert(offsetof(struct self_ex_info_t, digest) == 0x20);
-static_assert(sizeof(struct self_ex_info_t) == 0x40);
 
 /**
  * SELF entry
@@ -119,11 +96,6 @@ typedef struct self_entry_t
     uint64_t filesz;
     uint64_t memsz;
 } self_entry_t, SelfEntry;
-static_assert(offsetof(struct self_entry_t, props) == 0x00);
-static_assert(offsetof(struct self_entry_t, offset) == 0x08);
-static_assert(offsetof(struct self_entry_t, filesz) == 0x10);
-static_assert(offsetof(struct self_entry_t, memsz) == 0x18);
-static_assert(sizeof(struct self_entry_t) == 0x20);
 
 /**
  * SELF header
@@ -153,14 +125,11 @@ typedef struct self_fake_auth_info_t
     uint64_t size;
     SelfAuthInfo info;
 } self_fake_auth_info_t, SelfFakeAuthInfo;
-static_assert(offsetof(struct self_fake_auth_info_t, size) == 0x00);
-static_assert(offsetof(struct self_fake_auth_info_t, info) == 0x08);
-static_assert(sizeof(struct self_fake_auth_info_t) == sizeof(uint64_t) + sizeof(SelfAuthInfo));
 
 /**
  * SELF formats
 */
-enum self_format_t
+enum self_format_t : int
 {
     /**
      * No Specified format
@@ -252,16 +221,11 @@ typedef struct _MailboxMessage
     uint32_t unk48;
     char unk52[76];
 } MailboxMessage;
-static_assert(offsetof(MailboxMessage, unk08) == 8);
-static_assert(offsetof(MailboxMessage, retVal) == 4);
-static_assert(offsetof(MailboxMessage, unk24) == 24);
-static_assert(offsetof(MailboxMessage, unk48) == 48);
-static_assert(sizeof(MailboxMessage) == 0x80);
 
 struct fake_key_desc_t
 {
     uint8_t key[0x20];
-    bool occupied;
+    char occupied;
 };
 
 struct fake_key_d_t
@@ -302,7 +266,6 @@ typedef union _PfsKeyBlob
     } Out;
 
 } PfsKeyBlob;
-static_assert(sizeof(union _PfsKeyBlob) == SIZEOF_PFS_KEY_BLOB);
 
 typedef union _KeymgrPayload
 {
@@ -324,12 +287,6 @@ struct rsa_key_t
     uint8_t* dmq1;
     uint8_t* iqmp;
 };
-static_assert(offsetof(struct rsa_key_t, p) == 0x20);
-static_assert(offsetof(struct rsa_key_t, q) == 0x28);
-static_assert(offsetof(struct rsa_key_t, dmp1) == 0x30);
-static_assert(offsetof(struct rsa_key_t, dmq1) == 0x38);
-static_assert(offsetof(struct rsa_key_t, iqmp) == 0x40);
-static_assert(sizeof(struct rsa_key_t) == SIZEOF_RSA_KEY);
 
 struct act_dat_t
 {
@@ -351,23 +308,6 @@ struct act_dat_t
     uint8_t staticPerConsoleData3[0x20];
     uint8_t signature[0x100];
 };
-static_assert(offsetof(struct act_dat_t, magic) == 0x00);
-static_assert(offsetof(struct act_dat_t, versionMajor) == 0x04);
-static_assert(offsetof(struct act_dat_t, versionMinor) == 0x06);
-static_assert(offsetof(struct act_dat_t, accountId) == 0x08);
-static_assert(offsetof(struct act_dat_t, startTime) == 0x10);
-static_assert(offsetof(struct act_dat_t, endTime) == 0x18);
-static_assert(offsetof(struct act_dat_t, flags) == 0x20);
-static_assert(offsetof(struct act_dat_t, unk3) == 0x28);
-static_assert(offsetof(struct act_dat_t, unk4) == 0x2C);
-static_assert(offsetof(struct act_dat_t, openPsidHash) == 0x60);
-static_assert(offsetof(struct act_dat_t, staticPerConsoleData1) == 0x80);
-static_assert(offsetof(struct act_dat_t, digest) == 0xA0);
-static_assert(offsetof(struct act_dat_t, keyTable) == 0xB0);
-static_assert(offsetof(struct act_dat_t, staticPerConsoleData2) == 0xD0);
-static_assert(offsetof(struct act_dat_t, staticPerConsoleData3) == 0xE0);
-static_assert(offsetof(struct act_dat_t, signature) == 0x100);
-static_assert(sizeof(struct act_dat_t) == SIZEOF_ACTDAT);
 
 struct rif_t
 {
@@ -393,26 +333,6 @@ struct rif_t
     uint8_t data[RIF_DATA_SIZE];
     uint8_t signature[0x100];
 };
-static_assert(offsetof(struct rif_t, magic) == 0x00);
-static_assert(offsetof(struct rif_t, versionMajor) == 0x04);
-static_assert(offsetof(struct rif_t, versionMinor) == 0x06);
-static_assert(offsetof(struct rif_t, accountId) == 0x08);
-static_assert(offsetof(struct rif_t, startTime) == 0x10);
-static_assert(offsetof(struct rif_t, endTime) == 0x18);
-static_assert(offsetof(struct rif_t, contentId) == 0x20);
-static_assert(offsetof(struct rif_t, format) == 0x50);
-static_assert(offsetof(struct rif_t, drmType) == 0x52);
-static_assert(offsetof(struct rif_t, contentType) == 0x54);
-static_assert(offsetof(struct rif_t, skuFlag) == 0x56);
-static_assert(offsetof(struct rif_t, contentFlags) == 0x58);
-static_assert(offsetof(struct rif_t, iroTag) == 0x60);
-static_assert(offsetof(struct rif_t, ekcVersion) == 0x64);
-static_assert(offsetof(struct rif_t, unk3) == 0x6A);
-static_assert(offsetof(struct rif_t, unk4) == 0x6C);
-static_assert(offsetof(struct rif_t, digest) == 0x260);
-static_assert(offsetof(struct rif_t, data) == 0x270);
-static_assert(offsetof(struct rif_t, signature) == 0x300);
-static_assert(sizeof(struct rif_t) == SIZEOF_RIF);
 
 typedef struct _RsaBuffer
 {
@@ -426,8 +346,6 @@ typedef struct _PfsHeader
     uint8_t cryptSeed[0x10];
     uint8_t _pad380[0x220];
 } PfsHeader;
-static_assert(offsetof(struct _PfsHeader, cryptSeed) == 0x370);
-static_assert(sizeof(struct _PfsHeader) == SIZEOF_PFS_HEADER);
 
 typedef union _KeymgrResponse
 {

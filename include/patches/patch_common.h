@@ -3,9 +3,9 @@
 
 struct patch
 {
-    char *purpose;
+    const char *purpose;
     uint64_t offset;
-    char *data;
+    const char *data;
     int size;
 };
 
@@ -23,7 +23,7 @@ enum hook_id
 struct hook
 {
     enum hook_id id;
-    char *purpose;
+    const char *purpose;
     uint64_t func_offset;
     uint64_t call_offset;
 };

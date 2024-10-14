@@ -1,8 +1,9 @@
-#include "fself.h"
-#include "kdlsym.h"
 #include <sys/errno.h>
 #include <stdio.h>
 #include <string.h>
+
+#include "fself.h"
+#include "kdlsym.h"
 
 /**
  * @brief The exec authentication information
@@ -49,7 +50,6 @@ const uint8_t c_DynlibAuthInfo[] =
  */
 int OnSceSblAuthMgrIsLoadable2(SelfContext* p_Context, SelfAuthInfo* p_OldAuthInfo, int32_t p_PathId, SelfAuthInfo* p_NewAuthInfo)
 {
-    // I freaking hate C
     auto sceSblAuthMgrIsLoadable2 = (int(*)(SelfContext* p_Context, SelfAuthInfo* p_OldAuthInfo, int32_t p_PathId, SelfAuthInfo* p_NewAuthInfo))kdlsym(KERNEL_SYM_SCESBLAUTHMGRISLOADABLE2);
 
     if (p_Context == NULL)

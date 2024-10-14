@@ -9,7 +9,9 @@
 #include <fcntl.h>
 #include <errno.h>
 
+extern "C" {
 #include <ps5/kernel.h>
+}
 
 #include "config.h"
 #include "debug_log.h"
@@ -21,8 +23,11 @@
 
 int g_debug_sock = -1;
 
-int sceKernelSleep(int secs);
-int sceKernelLoadStartModule(char *name, size_t argc, const void *argv, uint32_t flags, void *unk, int *res);
+extern "C"
+{
+    int sceKernelSleep(int secs);
+    int sceKernelLoadStartModule(char *name, size_t argc, const void *argv, uint32_t flags, void *unk, int *res);
+}
 
 // void dump_self_to_client(int client)
 // {
@@ -195,7 +200,7 @@ int main()
     // Test hook
     
 
-    ret = sceKernelLoadStartModule("/data/libExample.prx", 0, NULL, 0, NULL, NULL);
+    ret = sceKernelLoadStartModule((char *) "/data/libExample.prx", 0, NULL, 0, NULL, NULL);
     SOCK_LOG("[+] load fself: 0x%x\n", ret);
 
     //run_self_server(9005);

@@ -5,12 +5,25 @@
 #include <sys/cpuset.h>
 #include <unistd.h>
 
-#include <ps5/kernel.h>
+extern "C"
+{
+    #include <ps5/kernel.h>
+}
 
 #include "debug_log.h"
 #include "util.h"
 
-int sceKernelGetCurrentCpu();
+extern "C"
+{
+    int sceKernelGetCurrentCpu();
+
+    typedef struct notify_request {
+        char unk_00h[45];
+        char message[3075];
+    } notify_request_t;
+
+    int sceKernelSendNotificationRequest(int, notify_request_t*, size_t, int);
+}
 
 int pin_to_core(int num)
 {
@@ -104,13 +117,6 @@ void DumpHex(const void* data, size_t size) {
 
     SOCK_LOG("%s", hexbuf);
 }
-
-typedef struct notify_request {
-	char unk_00h[45];
-	char message[3075];
-} notify_request_t;
-
-int sceKernelSendNotificationRequest(int, notify_request_t*, size_t, int);
 
 int flash_notification(const char *fmt, ...)
 {

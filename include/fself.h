@@ -10,6 +10,3 @@ int32_t OnSceSblAuthMgrIsLoadable2(SelfContext* p_Context, SelfAuthInfo* p_OldAu
 int32_t BuildFakeSelfAuthInfo(SelfContext* p_Context, SelfAuthInfo* p_ParentAuthInfo, SelfAuthInfo* p_AuthInfo);
 int32_t SceSblAuthMgrGetElfHeader(SelfContext* p_Context, Elf64_Ehdr** p_OutElfHeader);
 int32_t SceSblAuthMgrGetSelfAuthInfoFake(SelfContext* p_Context, SelfAuthInfo* p_Info);
-
-const uint8_t c_ExecAuthInfo[AuthInfoSize];
-const uint8_t c_DynlibAuthInfo[AuthInfoSize];
