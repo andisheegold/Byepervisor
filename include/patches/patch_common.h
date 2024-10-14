@@ -9,4 +9,23 @@ struct patch
     int size;
 };
 
+enum hook_id
+{
+    HOOK_TEST_SYS_IS_DEVELOPMENT_MODE = 0,
+    HOOK_SCE_SBL_AUTHMGR_IS_LOADABLE_2,
+    HOOK_SCE_SBL_AUTHMGR_IS_LOADABLE__GET_PATH_ID,
+    HOOK_SCE_SBL_AUTHMGR_SM_LOAD_SELF_BLOCK__MAILBOX,
+    HOOK_SCE_SBL_AUTHMGR_SM_LOAD_SELF_SEGMENT__MAILBOX,
+    HOOK_SCE_SBL_AUTHMGR_VERIFY_HEADER_A,
+    HOOK_SCE_SBL_AUTHMGR_VERIFY_HEADER_B
+};
+
+struct hook
+{
+    enum hook_id id;
+    char *purpose;
+    uint64_t func_offset;
+    uint64_t call_offset;
+};
+
 #endif // PATCH_COMMON_H

@@ -3,6 +3,15 @@
 
 #include "patch_common.h"
 
+struct hook g_kernel_hooks_250[] = {
+    {
+        HOOK_TEST_SYS_IS_DEVELOPMENT_MODE,
+        "sys_is_development_mode() -> isDevelopmentMode()",
+        0x44000,
+        0x92A1EB
+    },
+};
+
 struct patch g_kernel_patches_250[] = {
     {
         /*

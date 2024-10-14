@@ -22,6 +22,7 @@
 int g_debug_sock = -1;
 
 int sceKernelSleep(int secs);
+int sceKernelLoadStartModule(char *name, size_t argc, const void *argv, uint32_t flags, void *unk, int *res);
 
 // void dump_self_to_client(int client)
 // {
@@ -130,6 +131,8 @@ int main()
     uint64_t pte;
     uint64_t pde;
 
+    flash_notification("Test\nwtf");
+
 	// Open a debug socket if enabled
 	if (PC_DEBUG_ENABLED) {
 		debug_sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -188,7 +191,14 @@ int main()
         SOCK_LOG("[!] Applying kernel patches failed, firmware likely not supported\n");
         return -1;
     }
-    //run_self_server(9010);
+
+    // Test hook
+    
+
+    ret = sceKernelLoadStartModule("/data/libExample.prx", 0, NULL, 0, NULL, NULL);
+    SOCK_LOG("[+] load fself: 0x%x\n", ret);
+
+    //run_self_server(9005);
 
     // run_dump_server(9003);
     return 0;
