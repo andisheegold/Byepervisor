@@ -55,3 +55,79 @@ int apply_kernel_patches()
 
     return 0;
 }
+
+struct hook *find_hook(hook_id id)
+{
+    uint64_t fw_ver;
+    struct hook *hooks;
+    struct hook *cur_hook;
+    int num_hooks;
+
+    fw_ver = kernel_get_fw_version() & 0xFFFF0000;
+
+    switch (fw_ver) {
+    // case 0x1050000:
+    //     hooks = (struct hook *) &g_kernel_hooks_105;
+    //     num_hooks = sizeof(g_kernel_hooks_105) / sizeof(struct hook);
+    //     break;
+    case 0x2500000:
+        hooks = (struct hook *) &g_kernel_hooks_250;
+        num_hooks = sizeof(g_kernel_hooks_250) / sizeof(struct hook);
+        break;
+    default:
+        return NULL;
+    }
+
+    for (int i = 0; i < num_hooks; i++) {
+        cur_hook = &hooks[i];
+        if (cur_hook->id == id) {
+            return cur_hook;
+        }
+    }
+
+    return NULL;
+}
+
+int install_hook(hook_id id, void *func)
+{
+    struct hook *hook_info;
+    uint64_t kernel_cave_addr;
+    uint64_t call_addr;
+    int32_t call_rel32;
+    char dump_buf[0x10];
+
+    // Find info for this hook
+    hook_info = find_hook(id);
+    if (hook_info == NULL)
+        return -ENOENT;
+
+    SOCK_LOG("hook_func_call: found hook (%s)\n", hook_info->purpose);
+
+    // Copy hook into kernel code cave
+    kernel_cave_addr = ktext(hook_info->func_offset);
+    SOCK_LOG("hook_func_call: copying hook to 0x%lx\n", kernel_cave_addr);
+
+    kernel_copyin(func, kernel_cave_addr, 0x1000);
+    kernel_copyout(kernel_cave_addr, &dump_buf, 0x10);
+    DumpHex(&dump_buf, 0x10);
+
+    // Calculate rel32
+    call_addr = ktext(hook_info->call_offset);
+    call_rel32 = (int32_t) (kernel_cave_addr - call_addr) - 5; // Subtract 5 for call opcodes
+
+    // Install hook
+    SOCK_LOG("hook_func_call: installing hook to 0x%lx (rel32=0x%x)\n", call_addr, call_rel32);
+
+    kernel_copyin(&call_rel32, call_addr + 1, sizeof(call_rel32));
+    return 0;
+}
+
+int hook_is_development_mode()
+{
+    return 0xc001;
+}
+
+int apply_test_hook()
+{
+    return install_hook(HOOK_TEST_SYS_IS_DEVELOPMENT_MODE, (void *) &hook_is_development_mode);
+}

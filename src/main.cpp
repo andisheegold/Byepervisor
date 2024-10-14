@@ -27,6 +27,7 @@ extern "C"
 {
     int sceKernelSleep(int secs);
     int sceKernelLoadStartModule(char *name, size_t argc, const void *argv, uint32_t flags, void *unk, int *res);
+    int __sys_is_development_mode();
 }
 
 // void dump_self_to_client(int client)
@@ -198,7 +199,10 @@ int main()
     }
 
     // Test hook
-    
+    SOCK_LOG("[+] Kernel base = 0x%lx\n", ktext(0));
+    SOCK_LOG("[+] Bef. hook is_development_mode = 0x%x\n", __sys_is_development_mode());
+    apply_test_hook();
+    SOCK_LOG("[+] Aft. hook is_development_mode = 0x%x\n", __sys_is_development_mode());
 
     ret = sceKernelLoadStartModule((char *) "/data/libExample.prx", 0, NULL, 0, NULL, NULL);
     SOCK_LOG("[+] load fself: 0x%x\n", ret);
