@@ -9,11 +9,11 @@ endif
 
 ELF := byepervisor.elf
 
-CFLAGS := -Wall -Werror -g -I./include
+CFLAGS := -std=c23 -Wall -Werror -g -I./include
 
 all: $(ELF)
 
-$(ELF): src/main.c  src/kdlsym.c src/paging.c src/patching.c src/self.c src/util.c
+$(ELF): src/main.c  src/kdlsym.c src/paging.c src/patching.c src/self.c src/util.c src/fself.c src/fpkg.c
 	$(CC) $(CFLAGS) -o $@ $^
 
 clean:
