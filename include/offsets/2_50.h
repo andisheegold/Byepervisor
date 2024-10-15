@@ -13,16 +13,16 @@ uint64_t g_sym_map_250[] = {
     0x0,                // KERNEL_SYM_FPU_KERN_LEAVE
     0x0,                // KERNEL_SYM_FPU_KERN_CTX
     0x0,                // KERNEL_SYM_SHA256HMAC
-    0x0,                // KERNEL_SYM_AESCBCCFB128DECRYPT
-    0x0,                // KERNEL_SYM_MTX_LOCK_FLAGS
-    0x0,                // KERNEL_SYM_MTX_UNLOCK_FLAGS
+    0x260680,           // KERNEL_SYM_AESCBCCFB128DECRYPT
+    0x47AE20,           // KERNEL_SYM_MTX_LOCK_FLAGS
+    0x47B310,                // KERNEL_SYM_MTX_UNLOCK_FLAGS
     0x0,                // KERNEL_SYM_SBL_DRV_MSG_MTX
     0x0,                // KERNEL_SYM_GPU_VA_PAGE_LIST
     0x0,                // KERNEL_SYM_SCESBLDRIVERSENDMSG
     0x0,                // KERNEL_SYM_SCESBLPFSSETKEYS
     0x0,                // KERNEL_SYM_RSAESPKCS1V15DEC2048CRT
-    0x0,                // KERNEL_SYM_SX_XLOCK
-    0x0,                // KERNEL_SYM_SX_XUNLOCK
+    0xB0C590,           // KERNEL_SYM_SX_XLOCK
+    0xB0D020,           // KERNEL_SYM_SX_XUNLOCK
     0x0,                // KERNEL_SYM_AESCBCCFB128ENCRYPT
     0x0,                // KERNEL_SYM_SCESBLKEYMGRSETKEYFORPFS
     0x0,                // KERNEL_SYM_SCESBLKEYMGRCLEARKEY
