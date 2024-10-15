@@ -7,15 +7,15 @@ uint64_t g_sym_map_250[] = {
     0x4CB38AC,          // KERNEL_SYM_PML4PML4I
     0x4CB38C8,          // KERNEL_SYM_PMAP_STORE
     0x7C40000,          // KERNEL_SYM_DATA_CAVE
-    0x0,                // KERNEL_SYM_SCESBLAUTHMGRISLOADABLE2
-    0x0,                // KERNEL_SYM_SCESBLAUTHMGRGETSELFINFO
-    0x0,                // KERNEL_SYM_FPU_KERN_ENTER
-    0x0,                // KERNEL_SYM_FPU_KERN_LEAVE
-    0x0,                // KERNEL_SYM_FPU_KERN_CTX
+    0x08C3800,          // KERNEL_SYM_SCESBLAUTHMGRISLOADABLE2
+    0x8C43A0,           // KERNEL_SYM_SCESBLAUTHMGRGETSELFINFO
+    0x67AA10,           // KERNEL_SYM_FPU_KERN_ENTER
+    0x67AB40,           // KERNEL_SYM_FPU_KERN_LEAVE
+    0x4160000,          // KERNEL_SYM_FPU_KERN_CTX
     0x0,                // KERNEL_SYM_SHA256HMAC
     0x260680,           // KERNEL_SYM_AESCBCCFB128DECRYPT
     0x47AE20,           // KERNEL_SYM_MTX_LOCK_FLAGS
-    0x47B310,                // KERNEL_SYM_MTX_UNLOCK_FLAGS
+    0x47B310,           // KERNEL_SYM_MTX_UNLOCK_FLAGS
     0x0,                // KERNEL_SYM_SBL_DRV_MSG_MTX
     0x0,                // KERNEL_SYM_GPU_VA_PAGE_LIST
     0x0,                // KERNEL_SYM_SCESBLDRIVERSENDMSG
