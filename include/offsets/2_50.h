@@ -12,7 +12,7 @@ uint64_t g_sym_map_250[] = {
     0x67AA10,           // KERNEL_SYM_FPU_KERN_ENTER
     0x67AB40,           // KERNEL_SYM_FPU_KERN_LEAVE
     0x4160000,          // KERNEL_SYM_FPU_KERN_CTX
-    0x0,                // KERNEL_SYM_SHA256HMAC
+    0x825D20,           // KERNEL_SYM_SHA256HMAC
     0x260680,           // KERNEL_SYM_AESCBCCFB128DECRYPT
     0x47AE20,           // KERNEL_SYM_MTX_LOCK_FLAGS
     0x47B310,           // KERNEL_SYM_MTX_UNLOCK_FLAGS
@@ -23,7 +23,7 @@ uint64_t g_sym_map_250[] = {
     0x0,                // KERNEL_SYM_RSAESPKCS1V15DEC2048CRT
     0xB0C590,           // KERNEL_SYM_SX_XLOCK
     0xB0D020,           // KERNEL_SYM_SX_XUNLOCK
-    0x0,                // KERNEL_SYM_AESCBCCFB128ENCRYPT
+    0x260430,           // KERNEL_SYM_AESCBCCFB128ENCRYPT, idk bout this one
     0x0,                // KERNEL_SYM_SCESBLKEYMGRSETKEYFORPFS
     0x0,                // KERNEL_SYM_SCESBLKEYMGRCLEARKEY
     0x0,                // KERNEL_SYM_SCESBLKEYMGRSMCALLFUNC
