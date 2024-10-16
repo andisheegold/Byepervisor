@@ -16,6 +16,8 @@ extern "C" {
 #include "config.h"
 #include "debug_log.h"
 #include "kdlsym.h"
+#include "kexec.h"
+#include "mirror.h"
 #include "paging.h"
 #include "patching.h"
 #include "self.h"
@@ -192,17 +194,33 @@ int main()
         return 0;
     }
 
+    SOCK_LOG("[+] Kernel base = 0x%lx\n", ktext(0));
+
     // Apply patches
     if (apply_kernel_patches() != 0) {
         SOCK_LOG("[!] Applying kernel patches failed, firmware likely not supported\n");
         return -1;
     }
 
+    // Install kexec syscall
+    uint8_t test_opcodes[] = {0x48, 0xC7, 0x87, 0x08, 0x04, 0x00, 0x00, 0x01, 0xC0, 0x37, 0x13, 0x31, 0xC0, 0xC3};
+    kernel_copyin(&test_opcodes, kdlsym(KERNEL_SYM_CODE_CAVE), 14);
+
+    //install_custom_syscall(0x11, 2, kdlsym(KERNEL_SYM_CODE_CAVE));
+    SOCK_LOG("[+] Installing kexec syscall\n");
+    install_kexec();
+
+    sceKernelSleep(2);
+
+    int test_ret = kexec(kdlsym(KERNEL_SYM_CODE_CAVE));
+    SOCK_LOG("[+] Testing kexec: 0x%x\n", test_ret);
+
     // Test hook
-    SOCK_LOG("[+] Kernel base = 0x%lx\n", ktext(0));
-    SOCK_LOG("[+] Bef. hook is_development_mode = 0x%x\n", __sys_is_development_mode());
-    apply_test_hook();
-    SOCK_LOG("[+] Aft. hook is_development_mode = 0x%x\n", __sys_is_development_mode());
+    // SOCK_LOG("[+] Bef. hook is_development_mode = 0x%x\n", __sys_is_development_mode());
+    // apply_test_hook();
+    // SOCK_LOG("[+] Aft. hook is_development_mode = 0x%x\n", __sys_is_development_mode());
+
+    // SOCK_LOG("[+] Installing kernel payload (0x%lx)\n", )
 
     ret = sceKernelLoadStartModule((char *) "/data/libExample.prx", 0, NULL, 0, NULL, NULL);
     SOCK_LOG("[+] load fself: 0x%x\n", ret);
@@ -210,5 +228,6 @@ int main()
     //run_self_server(9005);
 
     // run_dump_server(9003);
+    reset_mirrors();
     return 0;
 }

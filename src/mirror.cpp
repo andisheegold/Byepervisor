@@ -14,7 +14,10 @@
 #define MAX_MIRRORS                         0x100
 #define UNUSED(x)                           (void) (x)
 
-int sceKernelUsleep(int usecs);
+extern "C"
+{
+    int sceKernelUsleep(int usecs);
+}
 
 struct mirrored_page {
     uint64_t user_addr;

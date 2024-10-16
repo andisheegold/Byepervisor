@@ -241,3 +241,20 @@ int32_t SceSblAuthMgrGetSelfAuthInfoFake(SelfContext* p_Context, SelfAuthInfo* p
     // WriteLog(LL_Error, "ealready (no valid authinfo)");
     return -EALREADY;
 }
+
+int OnSceSblACMgrGetPathId(const char *path)
+{
+    constexpr const char *selfDir = "/data/self";
+    constexpr const char *hostappDir = "/hostapp";
+
+    auto sceSblAuthMgrIsLoadable2 = (int(*)(SelfContext* p_Context, SelfAuthInfo* p_OldAuthInfo, int32_t p_PathId, SelfAuthInfo* p_NewAuthInfo))kdlsym(KERNEL_SYM_SCESBLAUTHMGRISLOADABLE2);
+    
+
+    if (strstr(path, selfDir) == path) {
+        path = path + strlen(selfDir);
+    } else if (strstr(path, hostappDir) == path) {
+        path = path + strlen(hostappDir);
+    }
+
+    return sceSblACM
+}

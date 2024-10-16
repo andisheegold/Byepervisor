@@ -82,23 +82,3 @@ uint64_t kdlsym(ksym_t sym)
 
     return 0;
 }
-
-uint64_t kdlpatch(kpatch_t patch)
-{
-    // Init kdlsym if it's not initialized already
-    if (g_kernel_base == 0)
-        init_kdlsym();
-
-    // Don't overflow patch table
-    if (patch >= KERNEL_PATCH_MAX)
-        return 0;
-
-    switch (g_fw_version) {
-    case 0x1050000:
-        return g_kernel_base + g_patch_map_105[patch];
-    case 0x2500000:
-        return g_kernel_base + g_patch_map_250[patch];
-    }
-
-    return 0;
-}

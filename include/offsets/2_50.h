@@ -7,31 +7,10 @@ uint64_t g_sym_map_250[] = {
     0x4CB38AC,          // KERNEL_SYM_PML4PML4I
     0x4CB38C8,          // KERNEL_SYM_PMAP_STORE
     0x7C40000,          // KERNEL_SYM_DATA_CAVE
-    0x08C3800,          // KERNEL_SYM_SCESBLAUTHMGRISLOADABLE2
-    0x8C43A0,           // KERNEL_SYM_SCESBLAUTHMGRGETSELFINFO
-    0x67AA10,           // KERNEL_SYM_FPU_KERN_ENTER
-    0x67AB40,           // KERNEL_SYM_FPU_KERN_LEAVE
-    0x4160000,          // KERNEL_SYM_FPU_KERN_CTX
-    0x825D20,           // KERNEL_SYM_SHA256HMAC
-    0x260680,           // KERNEL_SYM_AESCBCCFB128DECRYPT
-    0x47AE20,           // KERNEL_SYM_MTX_LOCK_FLAGS
-    0x47B310,           // KERNEL_SYM_MTX_UNLOCK_FLAGS
-    0x0,                // KERNEL_SYM_SBL_DRV_MSG_MTX
-    0x0,                // KERNEL_SYM_GPU_VA_PAGE_LIST
-    0x0,                // KERNEL_SYM_SCESBLDRIVERSENDMSG
-    0x0,                // KERNEL_SYM_SCESBLPFSSETKEYS
-    0x0,                // KERNEL_SYM_RSAESPKCS1V15DEC2048CRT
-    0xB0C590,           // KERNEL_SYM_SX_XLOCK
-    0xB0D020,           // KERNEL_SYM_SX_XUNLOCK
-    0x260430,           // KERNEL_SYM_AESCBCCFB128ENCRYPT, idk bout this one
-    0x0,                // KERNEL_SYM_SCESBLKEYMGRSETKEYFORPFS
-    0x0,                // KERNEL_SYM_SCESBLKEYMGRCLEARKEY
-    0x0,                // KERNEL_SYM_SCESBLKEYMGRSMCALLFUNC
-    0x0,                // KERNEL_SYM_SBL_KEYMGR_KEY_RBTREE
-    0x0,                // KERNEL_SYM_SCESBLKEYMGRSETKEYSTORAGE
-    0x0,                // KERNEL_SYM_SBL_KEYMGR_KEY_SLOTS
-    0x0,                // KERNEL_SYM_SBL_KEYMGR_BUF_VA
-    0x0,                // KERNEL_SYM_SBL_KEYMGR_BUF_GVA
+    0x0044000,          // KERNEL_SYM_CODE_CAVE
+    0x1CDE5E0,          // KERNEL_SYM_PS4_SYSENT
+    0x1CE6E00,          // KERNEL_SYM_PPR_SYSENT
+    0x0042000,          // KERNEL_SYM_GADGET_JMP_PTR_RSI
 };
 
 uint64_t g_patch_map_250[] = {

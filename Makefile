@@ -13,7 +13,7 @@ CFLAGS := -std=c++11 -Wall -Werror -g -I./include
 
 all: $(ELF)
 
-$(ELF): src/main.cpp src/kdlsym.cpp src/paging.cpp src/patching.cpp src/self.cpp src/util.cpp src/fself.cpp src/fpkg.cpp
+$(ELF): src/main.cpp src/kdlsym.cpp src/kexec.cpp src/mirror.cpp src/paging.cpp src/patching.cpp src/self.cpp src/util.cpp
 	$(CXX) $(CFLAGS) -o $@ $^
 
 clean:
