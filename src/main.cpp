@@ -203,20 +203,20 @@ int main()
         return -1;
     }
 
-    uint64_t hen_bin_size = (uint64_t)&_hen_bin_end - (uint64_t)&_hen_bin_start;
-    uint64_t hen_bin_remaining = hen_bin_size % 0x1000;
-    uint64_t hen_ben_total_block_copies = hen_bin_size / 0x1000;
-    uint64_t hen_bin_remaining_start_offset = hen_ben_total_block_copies * 0x1000;
+    // uint64_t hen_bin_size = (uint64_t)&_hen_bin_end - (uint64_t)&_hen_bin_start;
+    // uint64_t hen_bin_remaining = hen_bin_size % 0x1000;
+    // uint64_t hen_ben_total_block_copies = hen_bin_size / 0x1000;
+    // uint64_t hen_bin_remaining_start_offset = hen_ben_total_block_copies * 0x1000;
 
     // Copy hen into kernel code cave
-    // for (int i = 0; i < sizeof(bin2c_hen_bin); i += 0x1000) {
-    //     kernel_copyin(&bin2c_hen_bin[i], kdlsym(KERNEL_SYM_CODE_CAVE) + i, 0x1000);
-    // }
-    for (uint32_t i = 0; i < hen_bin_size; i += 0x1000) {
-        kernel_copyin(&_hen_bin_start[i], kdlsym(KERNEL_SYM_CODE_CAVE) + i, 0x1000);
+    for (int i = 0; i < sizeof(bin2c_hen_bin); i += 0x1000) {
+        kernel_copyin(&bin2c_hen_bin[i], kdlsym(KERNEL_SYM_CODE_CAVE) + i, 0x1000);
     }
-    if (hen_bin_remaining != 0)
-        kernel_copyin(&_hen_bin_start[hen_bin_remaining_start_offset], kdlsym(KERNEL_SYM_CODE_CAVE) + hen_bin_remaining_start_offset, hen_bin_remaining);
+    // for (uint32_t i = 0; i < hen_bin_size; i += 0x1000) {
+    //     kernel_copyin(&_hen_bin_start[i], kdlsym(KERNEL_SYM_CODE_CAVE) + i, 0x1000);
+    // }
+    // if (hen_bin_remaining != 0)
+    //     kernel_copyin(&_hen_bin_start[hen_bin_remaining_start_offset], kdlsym(KERNEL_SYM_CODE_CAVE) + hen_bin_remaining_start_offset, hen_bin_remaining);
 
     // Install kexec syscall
     // uint8_t test_opcodes[] = {0x48, 0xC7, 0x87, 0x08, 0x04, 0x00, 0x00, 0x01, 0xC0, 0x37, 0x13, 0x31, 0xC0, 0xC3};

@@ -33,22 +33,6 @@ constexpr uint8_t orbisPrxAuthInfo[] {
 };
 
 extern "C" {
-    extern uint64_t FSELF_PAGE;
-    extern int (_sceSblAuthMgrCheckSelfIsLoadable)(SelfContext *ctx, SelfAuthInfo *parentAuthInfo, int pathId, SelfAuthInfo *selfAuthInfo);
-    extern uint64_t sceSblAuthMgrIsLoadable_CALL__sceSblAuthMgrCheckSelfIsLoadable;
-    extern int (_sceSblAuthMgrVerifySelfHeader)(SelfContext *ctx);
-    extern uint64_t sceSblAuthMgrAuthHeader_CALL__sceSblAuthMgrVerifySelfHeader;
-    extern uint64_t resumeAuthMgr_CALL__sceSblAuthMgrVerifySelfHeader;
-    extern int (sceSblServiceMailbox)(uint64_t handle, void *input, void *output);
-    extern uint64_t _sceSblAuthMgrSmLoadSelfSegment_CALL_sceSblServiceMailbox;
-    extern uint64_t _sceSblAuthMgrSmLoadSelfBlock_CALL_sceSblServiceMailbox;
-    extern uint64_t _sceSblAuthMgrSmLoadMultipleSelfBlocks_CALL_sceSblServiceMailbox;
-    extern int (sceSblACMgrGetPathId)(const char *path);
-    extern uint64_t sceSblAuthMgrIsLoadable_CALL_sceSblACMgrGetPathId;
-    extern int ctxStatus[];
-    extern SelfContext ctxTable[];
-    extern SelfHeader mini_syscore_self_header;
-
     static volatile int enableHook1 = 1;
     static volatile int enableHook2 = 1;
     static volatile int enableHook3 = 1;
@@ -57,8 +41,34 @@ extern "C" {
     static volatile int enableHook6 = 1;
 }
 
-//TODO: probably needs lock + def needs a check on elf type to avoid matching serviceId=0 on a zeroed self context I think?
+// SelfContext* getSelfContextByServiceId(uint32_t serviceId) {
+//     auto ctxTable            = (SelfContext *) kdlsym(KERNEL_SYM_CTXTABLE);
+//     auto ctxStatus           = (int *) kdlsym(KERNEL_SYM_CTXSTATUS);
+//     auto ctxTableMtx         = (void *) kdlsym(KERNEL_SYM_CTXTABLE_MTX);
+//     auto mtx_lock_flags      = (void(*)(void *m)) kdlsym(KERNEL_SYM_MTX_LOCK);
+//     auto mtx_unlock_flags    = (void(*)(void *m)) kdlsym(KERNEL_SYM_MTX_UNLOCK);
+
+//     mtx_lock(ctxTableMtx);
+//     for (int i = 0; i < 4; i++) {
+//         // 0 = uninit, 1 = header unverified, 2 = is loadable, 3 = active, 4 = in-use?
+//         if (ctxStatus[i] != 3 && ctxStatus[i] != 4) {
+//             continue;
+//         }
+
+//         auto ctx = &ctxTable[i];
+//         if (ctx->unk1C == serviceId) {
+//             mtx_unlock(ctxTableMtx);
+//             return ctx;
+//         }
+//     }
+
+//     mtx_unlock(ctxTableMtx);
+//     return nullptr;
+// }
+
 SelfContext* getSelfContextByServiceId(uint32_t serviceId) {
+    auto ctxTable       = (SelfContext *) kdlsym(KERNEL_SYM_CTXTABLE);
+    
     for(int i = 0; i < 4; i++) {
         auto ctx = &ctxTable[i];
         if(ctx->unk1C == serviceId) {
