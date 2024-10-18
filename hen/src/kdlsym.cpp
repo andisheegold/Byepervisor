@@ -12,6 +12,11 @@ void init_kdlsym(uint64_t fw_ver, uint64_t kernel_base)
     g_kernel_base   = kernel_base;
 }
 
+uint64_t get_fw_version()
+{
+    return g_fw_version;
+}
+
 uint64_t ktext(uint64_t offset)
 {
     if (g_kernel_base == 0)

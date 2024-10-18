@@ -14,10 +14,17 @@ typedef enum {
     KERNEL_SYM_SCESBLAUTHMGRISLOADABLE2,
     KERNEL_SYM_SCESBLAUTHMGRGETSELFINFO,
     KERNEL_SYM_SCESBLACMGRGETPATHID,
+    KERNEL_SYM_M_TEMP,
+    KERNEL_SYM_MALLOC,
+    KERNEL_SYM_FREE,
+    KERNEL_SYM_MINI_SYSCORE_BIN,
+    KERNEL_SYM_SCESBLAUTHMGRVERIFYHEADER,
+    KERNEL_SYM_SCESBLSERVICEMAILBOX,
     KERNEL_SYM_MAX,
 } ksym_t;
 
 void init_kdlsym(uint64_t fw_ver, uint64_t kernel_base);
+uint64_t get_fw_version();
 uint64_t kdlsym(ksym_t sym);
 uint64_t ktext(uint64_t offset);
 

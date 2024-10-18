@@ -205,21 +205,24 @@ int main()
 
     // Copy hen into kernel code cave
     for (int i = 0; i < sizeof(bin2c_hen_bin); i += 0x1000) {
-        kernel_copyin(&bin2c_hen_bin + i, kdlsym(KERNEL_SYM_CODE_CAVE) + i, 0x1000);
+        kernel_copyin(&bin2c_hen_bin[i], kdlsym(KERNEL_SYM_CODE_CAVE) + i, 0x1000);
     }
 
     // Install kexec syscall
     // uint8_t test_opcodes[] = {0x48, 0xC7, 0x87, 0x08, 0x04, 0x00, 0x00, 0x01, 0xC0, 0x37, 0x13, 0x31, 0xC0, 0xC3};
     // kernel_copyin(&test_opcodes, kdlsym(KERNEL_SYM_CODE_CAVE), 14);
-
     //install_custom_syscall(0x11, 2, kdlsym(KERNEL_SYM_CODE_CAVE));
+
     SOCK_LOG("[+] Installing kexec syscall\n");
     install_kexec();
 
-    sceKernelSleep(2);
+    SOCK_LOG("[+] Bef. hook is_development_mode = 0x%x\n", __sys_is_development_mode());
 
+    // Run hen
     int test_ret = kexec(kdlsym(KERNEL_SYM_CODE_CAVE));
     SOCK_LOG("[+] Testing kexec: 0x%x\n", test_ret);
+
+    SOCK_LOG("[+] Aft. hook is_development_mode = 0x%x\n", __sys_is_development_mode());
 
     // Test hook
     // SOCK_LOG("[+] Bef. hook is_development_mode = 0x%x\n", __sys_is_development_mode());

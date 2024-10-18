@@ -1,5 +1,7 @@
 #include <stdint.h>
 
+#include "fself.h"
+#include "hook.h"
 #include "kdlsym.h"
 
 struct args
@@ -15,10 +17,18 @@ extern "C" {
 
 int kernel_main(void *td, struct args *args)
 {
+    int ret;
+
     init_kdlsym(args->fw, args->kernel_base);
 
     auto printf = (void (*)(const char *fmt, ...)) kdlsym(KERNEL_SYM_PRINTF);
-    printf("hello from the other side, kernel_main=%p\n", &kernel_main);
+
+    printf("[HEN] Applying test hook\n");
+    ret = apply_test_hook();
+    printf("[HEN] ret = 0x%x\n", ret);
+
+    printf("[HEN] Applying fself hooks\n");
+    apply_fself_hooks();
 
     return 0;
 }
