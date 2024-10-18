@@ -9,11 +9,11 @@ endif
 
 ELF := byepervisor.elf
 
-CFLAGS := -std=c++11 -Wall -Werror -g -I./include
+CFLAGS := -std=c++11 -Wall -Werror -g -I./include -DHEN_BIN_PATH="\"hen/hen.bin\""
 
 all: $(ELF)
 
-$(ELF): src/main.cpp src/kdlsym.cpp src/kexec.cpp src/mirror.cpp src/paging.cpp src/patching.cpp src/self.cpp src/util.cpp
+$(ELF): src/main.cpp src/kdlsym.cpp src/kexec.cpp src/mirror.cpp src/paging.cpp src/patching.cpp src/self.cpp src/util.cpp src/hen.S
 	$(CXX) $(CFLAGS) -o $@ $^
 
 clean:
