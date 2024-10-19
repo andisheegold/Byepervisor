@@ -3,6 +3,8 @@
 #include "fself.h"
 #include "hook.h"
 #include "kdlsym.h"
+#include "patch_shellcore.h"
+#include "util.h"
 
 struct args
 {
@@ -25,10 +27,16 @@ int kernel_main(void *td, struct args *args)
 
     printf("[HEN] Applying test hook\n");
     ret = apply_test_hook();
-    printf("[HEN] ret = 0x%x\n", ret);
+    if (ret != 0) {
+        printf("[HEN] Failed to apply test hook\n");
+        return -1;
+    }
 
     printf("[HEN] Applying fself hooks\n");
     apply_fself_hooks();
+
+    printf("[HEN] Applying shellcore patches\n");
+    apply_shellcore_patches(td);
 
     return 0;
 }
