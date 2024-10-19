@@ -22,6 +22,7 @@ uint64_t g_sym_map_250[] = {
     0x39103A0,          // KERNEL_SYM_CTXTABLE
     0x047AE20,          // KERNEL_SYM_MTX_LOCK_FLAGS
     0x047B310,          // KERNEL_SYM_MTX_UNLOCK_FLAGS
+    0x092A570,          // KERNEL_SYM_RW_MEM
 };
 
 #endif // OFFSETS_2_50_H
