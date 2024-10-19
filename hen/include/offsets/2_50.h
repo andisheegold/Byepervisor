@@ -27,6 +27,7 @@ uint64_t g_sym_map_250[] = {
     0x02C39F0,          // KERNEL_SYM_VM_MAP_LOCK_READ
     0x02C3A30,          // KERNEL_SYM_VM_MAP_UNLOCK_READ
     0x02C3F00,          // KERNEL_SYM_VM_MAP_LOOKUP_ENTRY
+    0x0575390,          // KERNEL_SYM_BNET_CRYPTO_AES_CBC_CFB128_DECRYPT
 };
 
 #endif // OFFSETS_2_50_H

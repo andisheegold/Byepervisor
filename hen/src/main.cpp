@@ -1,5 +1,6 @@
 #include <stdint.h>
 
+#include "fpkg.h"
 #include "fself.h"
 #include "hook.h"
 #include "kdlsym.h"
@@ -34,6 +35,9 @@ int kernel_main(void *td, struct args *args)
 
     printf("[HEN] Applying fself hooks\n");
     apply_fself_hooks();
+
+    printf("[HEN] Applying fpkg hooks\n");
+    apply_fpkg_hooks();
 
     printf("[HEN] Applying shellcore patches\n");
     apply_shellcore_patches(td);

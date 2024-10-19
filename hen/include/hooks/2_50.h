@@ -36,6 +36,14 @@ struct hook g_kernel_hooks_250[] = {
         HOOK_FSELF_SCE_SBL_AUTHMGR_IS_LOADABLE_CALL_GET_PATHID,
         0x2912AD
     },
+    {
+        HOOK_FPKG_NPDRM_IOCTL_CMD_5_CALL_SCE_SBL_SERVICE_MAILBOX,
+        0x87E06C
+    },
+    {
+        HOOK_FPKG_NPDRM_IOCTL_CMD_6_CALL_SCE_SBL_SERVICE_MAILBOX,
+        0x87E311
+    }
 };
 
 #endif // HOOKS_2_50_H

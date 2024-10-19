@@ -8,7 +8,7 @@ struct patch g_shellcore_patches_250[] = {
         /*
          * xor eax, eax; nop; nop; nop
          */
-        0x25CBC3,
+        0x2203C3,
         "\x31\xC0\x90\x90\x90",
         5
     },
@@ -17,7 +17,7 @@ struct patch g_shellcore_patches_250[] = {
         /*
          * xor eax, eax; nop; nop; nop
          */
-        0x25CC0C,
+        0x22040C,
         "\x31\xC0\x90\x90\x90",
         5
     },
@@ -26,7 +26,7 @@ struct patch g_shellcore_patches_250[] = {
         /*
          * xor eax, eax; nop; nop; nop
          */
-        0x25CC80,
+        0x22047C,
         "\x31\xC0\x90\x90\x90",
         5
     },
@@ -35,7 +35,7 @@ struct patch g_shellcore_patches_250[] = {
         /*
          * xor eax, eax; nop; nop; nop
          */
-        0xACE363,
+        0x9D83F3,
         "\x31\xC0\x90\x90\x90",
         5
     },
@@ -44,7 +44,7 @@ struct patch g_shellcore_patches_250[] = {
         /*
          * xor eax, eax; nop; nop; nop
          */
-        0xACE3AC,
+        0x9D843C,
         "\x31\xC0\x90\x90\x90",
         5
     },
@@ -53,7 +53,7 @@ struct patch g_shellcore_patches_250[] = {
         /*
          * xor eax, eax; nop; nop; nop
          */
-        0xACE420,
+        0x9D84AC,
         "\x31\xC0\x90\x90\x90",
         5
     },
@@ -62,7 +62,7 @@ struct patch g_shellcore_patches_250[] = {
         /*
          * xor eax, eax; nop; nop; nop
          */
-        0xB5FC12,
+        0xA669F2,
         "\x31\xC0\x90\x90\x90",
         5
     },
@@ -71,7 +71,7 @@ struct patch g_shellcore_patches_250[] = {
         /*
          * xor eax, eax; nop; nop; nop
          */
-        0xDA8953,
+        0xC65CD3,
         "\x31\xC0\x90\x90\x90",
         5
     },
@@ -80,7 +80,7 @@ struct patch g_shellcore_patches_250[] = {
         /*
          * xor eax, eax; nop; nop; nop
          */
-        0xDA899C,
+        0xC65D1C,
         "\x31\xC0\x90\x90\x90",
         5
     },
@@ -89,7 +89,7 @@ struct patch g_shellcore_patches_250[] = {
         /*
          * xor eax, eax; nop; nop; nop
          */
-        0xDA8A10,
+        0xC65D8C,
         "\x31\xC0\x90\x90\x90",
         5
     },
@@ -98,7 +98,7 @@ struct patch g_shellcore_patches_250[] = {
         /*
          * longjmp
          */
-        0x4F50F1,
+        0x49FC71,
         "\x90\xE9",
         2
     },
@@ -107,7 +107,7 @@ struct patch g_shellcore_patches_250[] = {
         /*
          * strfree
          */
-        0x15054CC,
+        0x1376A0B,
         "\x66\x72\x65\x65",
         4
     },

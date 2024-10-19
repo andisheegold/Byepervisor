@@ -140,7 +140,8 @@ int main()
     uint64_t pte;
     uint64_t pde;
 
-    flash_notification("Test\nwtf");
+    // Set shellcore auth ID
+    kernel_set_ucred_authid(getpid(), 0x4800000000000007);
 
 	// Open a debug socket if enabled
 	if (PC_DEBUG_ENABLED) {
