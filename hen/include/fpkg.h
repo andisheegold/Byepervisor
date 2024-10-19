@@ -95,6 +95,34 @@ struct PfsmgrCmd11 {
     uint8_t contentId[0x24];
 };
 
+struct sbl_chunk_table_entry
+{
+    uint64_t pa;
+    uint64_t size;
+};
+struct sbl_chunk_table_header
+{
+    uint64_t first_pa;
+    uint64_t data_size;
+    uint64_t used_entries;
+    uint64_t unk18;
+    sbl_chunk_table_entry entries[];
+};
+
+struct RsaBuffer {
+    uint8_t* ptr;
+    uint32_t size;
+};
+
+struct RsaKey {
+    const uint8_t _pad00[0x20];
+    const uint8_t* p;
+    const uint8_t* q;
+    const uint8_t* dmp1;
+    const uint8_t* dmq1;
+    const uint8_t* iqmp;
+};
+
 void apply_fpkg_hooks();
 
 #endif /* FPKG_H */

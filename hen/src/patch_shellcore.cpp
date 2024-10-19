@@ -9,8 +9,6 @@
 
 #include "shellcore_patches/2_50.h"
 
-void *curthread;
-
 int proc_rw_mem(void *p, off_t procAddr, size_t sz, void *kAddr, size_t *ioSz, int write)
 {
     auto printf = (void (*)(const char *fmt, ...)) kdlsym(KERNEL_SYM_PRINTF);
@@ -110,7 +108,7 @@ uint64_t shellcore_get_addr(void *shellcore_proc)
     return addr;
 }
 
-void apply_shellcore_patches(void *td)
+void apply_shellcore_patches()
 {
     uint64_t fw_ver;
     struct patch *patches;
@@ -120,8 +118,6 @@ void apply_shellcore_patches(void *td)
     int num_patches;
 
     auto printf = (void (*)(const char *fmt, ...)) kdlsym(KERNEL_SYM_PRINTF);
-
-    curthread = td;
 
     // Resolve patches for this fw
     fw_ver = get_fw_version();

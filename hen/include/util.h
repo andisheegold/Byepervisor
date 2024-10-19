@@ -14,4 +14,6 @@ size_t strlen(const char *str);
 char *strstr(const char *str, const char *substring);
 int strncmp(const char * s1, const char * s2, size_t n);
 
+extern void *curthread;
+
 #endif // UTIL_H

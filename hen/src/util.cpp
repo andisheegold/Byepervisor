@@ -6,6 +6,7 @@
 #include "util.h"
 
 uint64_t g_dmap_base = 0;
+void *curthread;
 
 void init_dmap_resolve()
 {

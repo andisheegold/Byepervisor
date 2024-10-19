@@ -43,6 +43,10 @@ struct hook g_kernel_hooks_250[] = {
     {
         HOOK_FPKG_NPDRM_IOCTL_CMD_6_CALL_SCE_SBL_SERVICE_MAILBOX,
         0x87E311
+    },
+    {
+        HOOK_FPKG_PFS_VERIFY_SUPER_BLOCK_CALL_SCE_SBL_SERVICE_MAILBOX,
+        0x289F36
     }
 };
 

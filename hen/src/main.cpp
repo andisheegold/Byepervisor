@@ -22,6 +22,7 @@ int kernel_main(void *td, struct args *args)
 {
     int ret;
 
+    curthread = td;
     init_kdlsym(args->fw, args->kernel_base);
 
     auto printf = (void (*)(const char *fmt, ...)) kdlsym(KERNEL_SYM_PRINTF);
@@ -40,7 +41,7 @@ int kernel_main(void *td, struct args *args)
     apply_fpkg_hooks();
 
     printf("[HEN] Applying shellcore patches\n");
-    apply_shellcore_patches(td);
+    apply_shellcore_patches();
 
     return 0;
 }
