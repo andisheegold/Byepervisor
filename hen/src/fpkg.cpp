@@ -403,6 +403,17 @@ struct ccp_xts
     };
 };
 
+struct ccp_req {
+    struct ccp_msg* tqh_first;
+    struct ccp_msg** tqh_last;
+    void(*cb)(void*, int);
+    void* args;
+    uint64_t mid;
+    void* le_next;
+    void** le_prev;
+};
+
+
 int sceSblServiceCryptAsync_hook(void *async_req)
 {
     struct ccp_common *msg;
@@ -413,12 +424,15 @@ int sceSblServiceCryptAsync_hook(void *async_req)
     auto sceSblFinalizeCryptAsync = (void (*)(void *msg, int status)) kdlsym(KERNEL_SYM_SCE_SBL_FINALIZE_CRYPT_ASYNC);
 
     msg = (struct ccp_common *) (*(uint64_t *) (async_req));
-    printf("sceSblServiceCryptAsync_hook: msg = %p, before (msg->cmd = 0x%x)\n", msg, msg->cmd);
+    //printf("sceSblServiceCryptAsync_hook: msg = %p, before (msg->cmd = 0x%x)\n", msg, msg->cmd);
 
     if ((msg->cmd & 0x7FFFFFFF) == 0x9132000) { // SHA256 HMAC with key handle
         struct ccp_hmac *hmac_msg = (struct ccp_hmac *) msg;
         int idx = HANDLE_TO_IDX(hmac_msg->key_index);
-        printf("sceSblServiceCryptAsync_hook: SHA256 hmac key idx = 0x%x\n", idx);
+        //printf("sceSblServiceCryptAsync_hook: SHA256 hmac key idx = 0x%x\n", idx);
+
+        if (idx < 0)
+            return sceSblServiceCryptAsync(async_req);
 
         if (idx >= 0) {
             get_fake_key(idx, (char *) &hmac_msg->key);
@@ -426,52 +440,55 @@ int sceSblServiceCryptAsync_hook(void *async_req)
             hmac_msg->key_size = 0x20;
         }
 
-        printf("sceSblServiceCryptAsync_hook: cmd = 0x%x\n", msg->cmd);
-        printf("%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n", 
-            hmac_msg->key[0x00], hmac_msg->key[0x01], hmac_msg->key[0x02], hmac_msg->key[0x03],
-            hmac_msg->key[0x04], hmac_msg->key[0x05], hmac_msg->key[0x06], hmac_msg->key[0x07], 
-            hmac_msg->key[0x08], hmac_msg->key[0x09], hmac_msg->key[0x0A], hmac_msg->key[0x0B], 
-            hmac_msg->key[0x0C], hmac_msg->key[0x0D], hmac_msg->key[0x0E], hmac_msg->key[0x0F]);
-        printf("%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n", 
-            hmac_msg->key[0x10], hmac_msg->key[0x11], hmac_msg->key[0x12], hmac_msg->key[0x13],
-            hmac_msg->key[0x14], hmac_msg->key[0x15], hmac_msg->key[0x16], hmac_msg->key[0x17], 
-            hmac_msg->key[0x18], hmac_msg->key[0x19], hmac_msg->key[0x1A], hmac_msg->key[0x1B], 
-            hmac_msg->key[0x1C], hmac_msg->key[0x1D], hmac_msg->key[0x1E], hmac_msg->key[0x1F]);
-        printf("%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n", 
-            hmac_msg->key[0x20], hmac_msg->key[0x21], hmac_msg->key[0x22], hmac_msg->key[0x23],
-            hmac_msg->key[0x24], hmac_msg->key[0x25], hmac_msg->key[0x26], hmac_msg->key[0x27], 
-            hmac_msg->key[0x28], hmac_msg->key[0x29], hmac_msg->key[0x2A], hmac_msg->key[0x2B], 
-            hmac_msg->key[0x2C], hmac_msg->key[0x2D], hmac_msg->key[0x2E], hmac_msg->key[0x2F]);
-        printf("%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n", 
-            hmac_msg->key[0x30], hmac_msg->key[0x31], hmac_msg->key[0x32], hmac_msg->key[0x33],
-            hmac_msg->key[0x34], hmac_msg->key[0x35], hmac_msg->key[0x36], hmac_msg->key[0x37], 
-            hmac_msg->key[0x38], hmac_msg->key[0x39], hmac_msg->key[0x3A], hmac_msg->key[0x3B], 
-            hmac_msg->key[0x3C], hmac_msg->key[0x3D], hmac_msg->key[0x3E], hmac_msg->key[0x3F]);
+        // printf("sceSblServiceCryptAsync_hook: cmd = 0x%x\n", msg->cmd);
+        // printf("%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n", 
+        //     hmac_msg->key[0x00], hmac_msg->key[0x01], hmac_msg->key[0x02], hmac_msg->key[0x03],
+        //     hmac_msg->key[0x04], hmac_msg->key[0x05], hmac_msg->key[0x06], hmac_msg->key[0x07], 
+        //     hmac_msg->key[0x08], hmac_msg->key[0x09], hmac_msg->key[0x0A], hmac_msg->key[0x0B], 
+        //     hmac_msg->key[0x0C], hmac_msg->key[0x0D], hmac_msg->key[0x0E], hmac_msg->key[0x0F]);
+        // printf("%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n", 
+        //     hmac_msg->key[0x10], hmac_msg->key[0x11], hmac_msg->key[0x12], hmac_msg->key[0x13],
+        //     hmac_msg->key[0x14], hmac_msg->key[0x15], hmac_msg->key[0x16], hmac_msg->key[0x17], 
+        //     hmac_msg->key[0x18], hmac_msg->key[0x19], hmac_msg->key[0x1A], hmac_msg->key[0x1B], 
+        //     hmac_msg->key[0x1C], hmac_msg->key[0x1D], hmac_msg->key[0x1E], hmac_msg->key[0x1F]);
+        // printf("%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n", 
+        //     hmac_msg->key[0x20], hmac_msg->key[0x21], hmac_msg->key[0x22], hmac_msg->key[0x23],
+        //     hmac_msg->key[0x24], hmac_msg->key[0x25], hmac_msg->key[0x26], hmac_msg->key[0x27], 
+        //     hmac_msg->key[0x28], hmac_msg->key[0x29], hmac_msg->key[0x2A], hmac_msg->key[0x2B], 
+        //     hmac_msg->key[0x2C], hmac_msg->key[0x2D], hmac_msg->key[0x2E], hmac_msg->key[0x2F]);
+        // printf("%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n", 
+        //     hmac_msg->key[0x30], hmac_msg->key[0x31], hmac_msg->key[0x32], hmac_msg->key[0x33],
+        //     hmac_msg->key[0x34], hmac_msg->key[0x35], hmac_msg->key[0x36], hmac_msg->key[0x37], 
+        //     hmac_msg->key[0x38], hmac_msg->key[0x39], hmac_msg->key[0x3A], hmac_msg->key[0x3B], 
+        //     hmac_msg->key[0x3C], hmac_msg->key[0x3D], hmac_msg->key[0x3E], hmac_msg->key[0x3F]);
 
         Sha256Hmac(hmac_msg->hash, hmac_msg->data, hmac_msg->data_size, hmac_msg->key, 0x20);
+        struct ccp_req* req = (struct ccp_req*)async_req;
+        //printf("ccp_req->args: (%lx)\n", req->args);
+        req->cb(req->args, 0);
         sceSblFinalizeCryptAsync((void *) hmac_msg, 0);
         return 0;
     } else if ((msg->cmd & 0x7FFFF7FF) == 0x2108000) { // AES-XTS with key handle
         struct ccp_xts *xts_msg = (struct ccp_xts *) msg;
         int idx = HANDLE_TO_IDX(xts_msg->key_index);
-        printf("sceSblServiceCryptAsync_hook: AES-XTS key idx = 0x%x\n", idx);
+        //printf("sceSblServiceCryptAsync_hook: AES-XTS key idx = 0x%x\n", idx);
 
         if (idx >= 0) {
             get_fake_key(idx, (char *) &xts_msg->key);
             xts_msg->common.cmd &= ~(1 << 20);
         }
 
-        printf("sceSblServiceCryptAsync_hook: cmd = 0x%x\n", msg->cmd);
-        printf("%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n", 
-            xts_msg->key[0x00], xts_msg->key[0x01], xts_msg->key[0x02], xts_msg->key[0x03],
-            xts_msg->key[0x04], xts_msg->key[0x05], xts_msg->key[0x06], xts_msg->key[0x07], 
-            xts_msg->key[0x08], xts_msg->key[0x09], xts_msg->key[0x0A], xts_msg->key[0x0B], 
-            xts_msg->key[0x0C], xts_msg->key[0x0D], xts_msg->key[0x0E], xts_msg->key[0x0F]);
-        printf("%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n", 
-            xts_msg->key[0x10], xts_msg->key[0x11], xts_msg->key[0x12], xts_msg->key[0x13],
-            xts_msg->key[0x14], xts_msg->key[0x15], xts_msg->key[0x16], xts_msg->key[0x17], 
-            xts_msg->key[0x18], xts_msg->key[0x19], xts_msg->key[0x1A], xts_msg->key[0x1B], 
-            xts_msg->key[0x1C], xts_msg->key[0x1D], xts_msg->key[0x1E], xts_msg->key[0x1F]);
+        // printf("sceSblServiceCryptAsync_hook: cmd = 0x%x\n", msg->cmd);
+        // printf("%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n", 
+        //     xts_msg->key[0x00], xts_msg->key[0x01], xts_msg->key[0x02], xts_msg->key[0x03],
+        //     xts_msg->key[0x04], xts_msg->key[0x05], xts_msg->key[0x06], xts_msg->key[0x07], 
+        //     xts_msg->key[0x08], xts_msg->key[0x09], xts_msg->key[0x0A], xts_msg->key[0x0B], 
+        //     xts_msg->key[0x0C], xts_msg->key[0x0D], xts_msg->key[0x0E], xts_msg->key[0x0F]);
+        // printf("%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n", 
+        //     xts_msg->key[0x10], xts_msg->key[0x11], xts_msg->key[0x12], xts_msg->key[0x13],
+        //     xts_msg->key[0x14], xts_msg->key[0x15], xts_msg->key[0x16], xts_msg->key[0x17], 
+        //     xts_msg->key[0x18], xts_msg->key[0x19], xts_msg->key[0x1A], xts_msg->key[0x1B], 
+        //     xts_msg->key[0x1C], xts_msg->key[0x1D], xts_msg->key[0x1E], xts_msg->key[0x1F]);
     }
 
     return sceSblServiceCryptAsync(async_req);

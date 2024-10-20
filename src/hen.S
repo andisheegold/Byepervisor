@@ -1,8 +1,12 @@
-.intel_syntax noprefix
-.text
-
-.global _start, _hen_bin_start, _hen_bin_end
-
-_hen_bin_start:
-.incbin HEN_BIN_PATH
-_hen_bin_end:
+.section .rodata
+    .global KELF
+    .type   KELF, @object
+    .align  16
+KELF:
+    .incbin HEN_BIN_PATH
+KELF_END:
+    .global KELF_SZ
+    .type   KELF_SZ, @object
+    .align  16
+KELF_SZ:
+    .quad    KELF_END - KELF
