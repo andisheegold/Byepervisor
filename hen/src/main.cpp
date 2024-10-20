@@ -27,6 +27,13 @@ int kernel_main(void *td, struct args *args)
 
     auto printf = (void (*)(const char *fmt, ...)) kdlsym(KERNEL_SYM_PRINTF);
 
+    // Reset hooks before installing new ones
+    printf("[HEN] Resetting hooks\n");
+    for (int i = 0; i < HOOK_MAX; i++) {
+        reset_hook((hook_id) i);
+    }
+
+    // Install new hooks
     printf("[HEN] Applying test hook\n");
     ret = apply_test_hook();
     if (ret != 0) {

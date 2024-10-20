@@ -20,6 +20,12 @@ struct NpDrmCmd6 {
     uint32_t unk30; // 0 or 1
 };
 
+struct ClearKey {
+    uint32_t cmd;
+    uint32_t res;
+    uint64_t keyHandle;
+};
+
 struct Rif {
     uint32_t magic;
     uint16_t version;

@@ -96,6 +96,38 @@ int install_hook(hook_id id, void *func)
     return 0;
 }
 
+void reset_hook(hook_id id)
+{
+    struct hook *hook_info;
+    uint64_t call_addr;
+    uint64_t call_install;
+    int32_t call_rel32;
+    void *func;
+
+    auto printf = (void (*)(const char *fmt, ...)) kdlsym(KERNEL_SYM_PRINTF);
+    printf("reset_hook: hook id = %d\n", id);
+
+    // Find info for this hook
+    hook_info = find_hook(id);
+    if (hook_info == 0)
+        return;
+
+    printf("reset_hook: found hook\n");
+
+    // Calculate rel32
+    func        = (void *) ktext(hook_info->orig_func_offset);
+    call_addr   = ktext(hook_info->call_offset);
+    call_rel32  = (int32_t) ((uint64_t) (func) - call_addr) - 5; // Subtract 5 for call opcodes
+
+    printf("reset_hook: call_addr=0x%llx (call_rel32=0x%x)\n", call_addr, call_rel32);
+
+    // Install hook
+    printf("reset_hook: installing hook to 0x%lx (rel32=0x%x)\n", call_addr, call_rel32);
+
+    call_install = call_addr + 1;
+    *(uint32_t *) (call_install) = call_rel32;
+}
+
 int hook_is_development_mode()
 {
     return 0xc001;

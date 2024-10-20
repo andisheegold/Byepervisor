@@ -15,17 +15,22 @@ enum hook_id
     HOOK_FPKG_NPDRM_IOCTL_CMD_5_CALL_SCE_SBL_SERVICE_MAILBOX,
     HOOK_FPKG_NPDRM_IOCTL_CMD_6_CALL_SCE_SBL_SERVICE_MAILBOX,
     HOOK_FPKG_PFS_VERIFY_SUPER_BLOCK_CALL_SCE_SBL_SERVICE_MAILBOX,
+    HOOK_FPKG_SCE_SBL_PFS_CLEAR_KEY_1_CALL_SCE_SBL_SERVICE_MAILBOX,
+    HOOK_FPKG_SCE_SBL_PFS_CLEAR_KEY_2_CALL_SCE_SBL_SERVICE_MAILBOX,
     HOOK_FPKG_SCE_SBL_SERVICE_CRYPT_ASYNC_CALL_CCP_MSG_ENQUEUE,
+    HOOK_MAX
 };
 
 struct hook
 {
     enum hook_id id;
     uint64_t call_offset;
+    uint64_t orig_func_offset;
 };
 
 int install_raw_hook(uint64_t call_addr, void *func);
 int install_hook(hook_id id, void *func);
+void reset_hook(hook_id id);
 int apply_test_hook();
 
 #endif // HOOK_H

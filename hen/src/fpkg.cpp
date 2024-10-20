@@ -216,6 +216,62 @@ int RsaesPkcs1v15Dec2048CRT(RsaBuffer *output, RsaBuffer *input, RsaKey *key) {
     return 0;
 }
 
+int aes_ecb_128_enc_one_block(char *key, char *data)
+{
+    auto bnet_crypto_aes_cbc_cfb128_encrypt = (int (*)(void *, void *, size_t, void *, size_t, void *)) kdlsym(KERNEL_SYM_BNET_CRYPTO_AES_CBC_CFB128_ENCRYPT);
+
+    uint8_t iv[0x10] = {};
+    return bnet_crypto_aes_cbc_cfb128_encrypt(data, data, 0x10, key, 128, iv);
+}
+
+int aes_ecb_128_dec_one_block(char *key, char *data)
+{
+    auto bnet_crypto_aes_cbc_cfb128_decrypt = (int (*)(void *, void *, size_t, void *, size_t, void *)) kdlsym(KERNEL_SYM_BNET_CRYPTO_AES_CBC_CFB128_DECRYPT);
+
+    uint8_t iv[0x10] = {};
+    return bnet_crypto_aes_cbc_cfb128_decrypt(data, data, 0x10, key, 128, iv);
+}
+
+void aes_xts_4096_dec(void *buffer, void *out, uint32_t num_sectors, uint32_t start_sector, const void *xts_data, const void *xts_tweak)
+{
+    uint8_t *_buffer = (uint8_t*)buffer;
+    //uint8_t *_out    = (uint8_t*)out;
+
+    auto printf = (void (*)(const char *fmt, ...)) kdlsym(KERNEL_SYM_PRINTF);
+
+    printf("aes_xts_4096_dec: num_sectors = %d (start_sector = %d)\n", num_sectors, start_sector);
+    // num_sectors = (num_sectors - start_sector) + 1;
+
+    for(uint32_t i = 0; i < num_sectors; i++) {
+        uint8_t tweak[0x10] = {};
+
+        *(uint64_t*)(&tweak[0x0]) = start_sector + i;
+        aes_ecb_128_enc_one_block((char *) xts_tweak, (char *) tweak);
+
+        for(int ii = 0; ii < 0x1000; ii+=0x10) {
+            for(int iii = 0; iii < 0x10; iii++) {
+                _buffer[i * 0x1000 + ii + iii] ^= tweak[iii];
+            }
+            aes_ecb_128_dec_one_block((char *) xts_data, (char *) &_buffer[i * 0x1000 + ii]);
+            for(int iii = 0; iii < 0x10; iii++) {
+                _buffer[i * 0x1000 + ii + iii] ^= tweak[iii];
+            }
+
+            uint8_t carry_out = 0;
+            for(int iii = 0; iii < 0x10; iii++) {
+                uint8_t tmp = tweak[iii];
+                tweak[iii] = 2* tweak[iii] | carry_out;
+                carry_out = (tmp & 0x80) >> 7;
+            }
+            if(carry_out != 0x0) {
+                tweak[0] ^= 0x87;
+            }
+        }
+    }
+
+    //memcpy(_out, _buffer, num_sectors * 0x1000);
+}
+
 int verifySuperBlock_sceSblServiceMailbox(uint64_t handle, const PfsmgrCmd11* input, PfsmgrCmd11 *output)
 {
     int ret;
@@ -413,32 +469,50 @@ struct ccp_req {
     void** le_prev;
 };
 
+int dump_hmac_output = 0;
+int dump_xts_output = 0;
+
+void hex_dump(const char *name, uint8_t *buf, int len)
+{
+    auto printf = (void (*)(const char *fmt, ...)) kdlsym(KERNEL_SYM_PRINTF);
+
+    printf("%s hexdump (0x%x bytes)\n", name, len);
+    for (int i = 0; i < len; i += 0x10) {
+        printf("%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n", 
+            buf[i + 0x00], buf[i + 0x01], buf[i + 0x02], buf[i + 0x03],
+            buf[i + 0x04], buf[i + 0x05], buf[i + 0x06], buf[i + 0x07], 
+            buf[i + 0x08], buf[i + 0x09], buf[i + 0x0A], buf[i + 0x0B], 
+            buf[i + 0x0C], buf[i + 0x0D], buf[i + 0x0E], buf[i + 0x0F]);
+    }
+}
 
 int sceSblServiceCryptAsync_hook(void *async_req)
 {
     struct ccp_common *msg;
 
     auto printf = (void (*)(const char *fmt, ...)) kdlsym(KERNEL_SYM_PRINTF);
+    // auto M_TEMP = (void *) kdlsym(KERNEL_SYM_M_TEMP);
+    // auto malloc = (void*(*)(unsigned long size, void* type, int flags)) kdlsym(KERNEL_SYM_MALLOC);
+    // auto free   = (void(*)(void* addr, void* type)) kdlsym(KERNEL_SYM_FREE);
     auto sceSblServiceCryptAsync = (int (*)(void *req)) kdlsym(KERNEL_SYM_SCE_SBL_SERVICE_CRYPT_ASYNC);
     auto Sha256Hmac = (void (*)(void *hash, void *data, size_t data_sz, void *key, size_t key_size)) kdlsym(KERNEL_SYM_SHA256_HMAC);
     auto sceSblFinalizeCryptAsync = (void (*)(void *msg, int status)) kdlsym(KERNEL_SYM_SCE_SBL_FINALIZE_CRYPT_ASYNC);
 
     msg = (struct ccp_common *) (*(uint64_t *) (async_req));
-    //printf("sceSblServiceCryptAsync_hook: msg = %p, before (msg->cmd = 0x%x)\n", msg, msg->cmd);
+    printf("sceSblServiceCryptAsync_hook: msg = %p, before (msg->cmd = 0x%x)\n", msg, msg->cmd);
 
     if ((msg->cmd & 0x7FFFFFFF) == 0x9132000) { // SHA256 HMAC with key handle
         struct ccp_hmac *hmac_msg = (struct ccp_hmac *) msg;
         int idx = HANDLE_TO_IDX(hmac_msg->key_index);
-        //printf("sceSblServiceCryptAsync_hook: SHA256 hmac key idx = 0x%x\n", idx);
+        printf("sceSblServiceCryptAsync_hook: SHA256 hmac key idx = 0x%x\n", idx);
 
         if (idx < 0)
             return sceSblServiceCryptAsync(async_req);
 
-        if (idx >= 0) {
-            get_fake_key(idx, (char *) &hmac_msg->key);
-            hmac_msg->common.cmd &= ~(1 << 20);
-            hmac_msg->key_size = 0x20;
-        }
+        char hmac_key[0x40];
+        get_fake_key(idx, (char *) &hmac_key);
+        // hmac_msg->common.cmd &= ~(1 << 20);
+        // hmac_msg->key_size = 0x20;
 
         // printf("sceSblServiceCryptAsync_hook: cmd = 0x%x\n", msg->cmd);
         // printf("%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n", 
@@ -462,7 +536,16 @@ int sceSblServiceCryptAsync_hook(void *async_req)
         //     hmac_msg->key[0x38], hmac_msg->key[0x39], hmac_msg->key[0x3A], hmac_msg->key[0x3B], 
         //     hmac_msg->key[0x3C], hmac_msg->key[0x3D], hmac_msg->key[0x3E], hmac_msg->key[0x3F]);
 
-        Sha256Hmac(hmac_msg->hash, hmac_msg->data, hmac_msg->data_size, hmac_msg->key, 0x20);
+        hex_dump("hmac ccp msg", (uint8_t *) hmac_msg, 0x200);
+        hex_dump("hmac key", (uint8_t *) hmac_key, 0x40);
+
+        Sha256Hmac(hmac_msg->hash, hmac_msg->data, hmac_msg->data_size, hmac_key, 0x20);
+
+        if (dump_hmac_output < 0x10) {
+            hex_dump("hmac hash output", (uint8_t *) hmac_msg->hash, 0x20);
+            dump_hmac_output++;
+        }
+
         struct ccp_req* req = (struct ccp_req*)async_req;
         //printf("ccp_req->args: (%lx)\n", req->args);
         req->cb(req->args, 0);
@@ -471,12 +554,12 @@ int sceSblServiceCryptAsync_hook(void *async_req)
     } else if ((msg->cmd & 0x7FFFF7FF) == 0x2108000) { // AES-XTS with key handle
         struct ccp_xts *xts_msg = (struct ccp_xts *) msg;
         int idx = HANDLE_TO_IDX(xts_msg->key_index);
-        //printf("sceSblServiceCryptAsync_hook: AES-XTS key idx = 0x%x\n", idx);
+        printf("sceSblServiceCryptAsync_hook: AES-XTS key idx = 0x%x\n", idx);
 
-        if (idx >= 0) {
-            get_fake_key(idx, (char *) &xts_msg->key);
-            xts_msg->common.cmd &= ~(1 << 20);
-        }
+        if (idx < 0)
+            return sceSblServiceCryptAsync(async_req);
+
+        get_fake_key(idx, (char *) &xts_msg->key);
 
         // printf("sceSblServiceCryptAsync_hook: cmd = 0x%x\n", msg->cmd);
         // printf("%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n", 
@@ -489,9 +572,53 @@ int sceSblServiceCryptAsync_hook(void *async_req)
         //     xts_msg->key[0x14], xts_msg->key[0x15], xts_msg->key[0x16], xts_msg->key[0x17], 
         //     xts_msg->key[0x18], xts_msg->key[0x19], xts_msg->key[0x1A], xts_msg->key[0x1B], 
         //     xts_msg->key[0x1C], xts_msg->key[0x1D], xts_msg->key[0x1E], xts_msg->key[0x1F]);
+
+        // if (dump_xts_output < 2) {
+        //     hex_dump("xts encrypted input", (uint8_t *) xts_msg->in_data, xts_msg->num_sectors * 0x200);
+        // }
+
+        printf("xts in=%p, out=%p\n", xts_msg->in_data, xts_msg->out_data);
+        //hex_dump("xts ccp msg", (uint8_t *) xts_msg, 0x200);
+
+        //void *decrypted_data = (void *) malloc(xts_msg->num_sectors * 0x200, M_TEMP, 0x102);
+        void *tweak = (void *) ((uint64_t) (xts_msg->key) + 0x00);
+        void *key   = (void *) ((uint64_t) (xts_msg->key) + 0x10);
+        aes_xts_4096_dec(xts_msg->in_data, xts_msg->out_data, xts_msg->num_sectors, xts_msg->start_sector, key, tweak);
+        //memcpy(xts_msg->out_data, decrypted_data, xts_msg->num_sectors * 0x200);
+        //free(decrypted_data, M_TEMP);
+
+        if (dump_xts_output < 2) {
+            //hex_dump("xts decrypted output", (uint8_t *) xts_msg->out_data, xts_msg->num_sectors * 0x200);
+            dump_xts_output++;
+        }
+
+        struct ccp_req* req = (struct ccp_req*)async_req;
+        req->cb(req->args, 0);
+        sceSblFinalizeCryptAsync((void *) xts_msg, 0);
+        return 0;
     }
 
     return sceSblServiceCryptAsync(async_req);
+}
+
+int sceSblPfsClearKey_sceSblServiceMailbox(uint64_t handle, const ClearKey* input, ClearKey* output) 
+{
+    auto printf                 = (void (*)(const char *fmt, ...)) kdlsym(KERNEL_SYM_PRINTF);
+    auto sceSblServiceMailbox   = (int (*)(uint64_t handle, void *in, void *out)) kdlsym(KERNEL_SYM_SCESBLSERVICEMAILBOX);
+
+    uint32_t key;
+
+    printf("sceSblPfsClearKey_sceSblServiceMailbox\n");
+
+    key = HANDLE_TO_IDX(input->keyHandle);
+    if (key < 0)
+        return sceSblServiceMailbox(handle, (void *) input, output);
+
+    printf("sceSblPfsClearKey_sceSblServiceMailbox: key idx = 0x%x, clearing\n", key);
+    unregister_fake_key(key);
+    output->keyHandle = 0;
+    output->res = 0;
+    return 0;
 }
 
 void apply_fpkg_hooks()
@@ -507,8 +634,11 @@ void apply_fpkg_hooks()
     printf("[HEN] [FPKG] sceSblPfsVerifySuperBlock() -> sceSblServiceMailbox()\n");
     install_hook(HOOK_FPKG_PFS_VERIFY_SUPER_BLOCK_CALL_SCE_SBL_SERVICE_MAILBOX, (void *) &verifySuperBlock_sceSblServiceMailbox);
 
-    //printf("[HEN] [FPKG] sceSblServiceCryptAsync() -> ccpMsgEnqueue()\n");
-    //install_hook(HOOK_FPKG_SCE_SBL_SERVICE_CRYPT_ASYNC_CALL_CCP_MSG_ENQUEUE, (void *) &sceSblServiceCryptAsync_ccpMsgEnqueue);
+    printf("[HEN] [FPKG] sceSblPfsClearKey() -> sceSblServiceMailbox() 1\n");
+    install_hook(HOOK_FPKG_SCE_SBL_PFS_CLEAR_KEY_1_CALL_SCE_SBL_SERVICE_MAILBOX, (void *) &sceSblPfsClearKey_sceSblServiceMailbox);
+
+    printf("[HEN] [FPKG] sceSblPfsClearKey() -> sceSblServiceMailbox() 2\n");
+    install_hook(HOOK_FPKG_SCE_SBL_PFS_CLEAR_KEY_2_CALL_SCE_SBL_SERVICE_MAILBOX, (void *) &sceSblPfsClearKey_sceSblServiceMailbox);
 
     // Install hook on all calls to sceSblServiceCryptAsync()
     printf("[HEN] [FPKG] installing hooks to sceSblServiceCryptAsync() [0x%lx, 0x%lx]\n", ktext(0), kdlsym(KERNEL_SYM_TEXT_END));
