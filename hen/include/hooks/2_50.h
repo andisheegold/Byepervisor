@@ -47,6 +47,10 @@ struct hook g_kernel_hooks_250[] = {
     {
         HOOK_FPKG_PFS_VERIFY_SUPER_BLOCK_CALL_SCE_SBL_SERVICE_MAILBOX,
         0x289F36
+    },
+    {
+        HOOK_FPKG_SCE_SBL_SERVICE_CRYPT_ASYNC_CALL_CCP_MSG_ENQUEUE,
+        0x2E569D
     }
 };
 

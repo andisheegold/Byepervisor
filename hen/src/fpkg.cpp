@@ -222,7 +222,7 @@ int verifySuperBlock_sceSblServiceMailbox(uint64_t handle, const PfsmgrCmd11* in
 
     auto printf = (void (*)(const char *fmt, ...)) kdlsym(KERNEL_SYM_PRINTF);
     auto sceSblServiceMailbox = (int (*)(uint64_t handle, void *in, void *out)) kdlsym(KERNEL_SYM_SCESBLSERVICEMAILBOX);
-    auto Sha256Hmac = (void (*)(void *key, void *seed, size_t seed_sz, void *ekpfs, size_t ekpfs_sz)) kdlsym(KERNEL_SYM_SHA256_HMAC);
+    auto Sha256Hmac = (void (*)(void *hash, void *data, size_t data_sz, void *key, size_t key_size)) kdlsym(KERNEL_SYM_SHA256_HMAC);
 
     printf("sceSblPfsSetKeys verify superblock\n");
 
@@ -282,16 +282,199 @@ int verifySuperBlock_sceSblServiceMailbox(uint64_t handle, const PfsmgrCmd11* in
             uint8_t hmac_key[0x20]{};
             Sha256Hmac(hmac_key, pfs_seed, 0x14, ekpfs, 0x20);
 
+            printf("xts_key:\n");
+            printf("%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n", 
+                xts_key[0x00], xts_key[0x01], xts_key[0x02], xts_key[0x03],
+                xts_key[0x04], xts_key[0x05], xts_key[0x06], xts_key[0x07], 
+                xts_key[0x08], xts_key[0x09], xts_key[0x0A], xts_key[0x0B], 
+                xts_key[0x0C], xts_key[0x0D], xts_key[0x0E], xts_key[0x0F]);
+            printf("%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n", 
+                xts_key[0x10], xts_key[0x11], xts_key[0x12], xts_key[0x13],
+                xts_key[0x14], xts_key[0x15], xts_key[0x16], xts_key[0x17], 
+                xts_key[0x18], xts_key[0x19], xts_key[0x1A], xts_key[0x1B], 
+                xts_key[0x1C], xts_key[0x1D], xts_key[0x1E], xts_key[0x1F]);
+
+            printf("hmac_key:\n");
+            printf("%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n", 
+                hmac_key[0x00], hmac_key[0x01], hmac_key[0x02], hmac_key[0x03],
+                hmac_key[0x04], hmac_key[0x05], hmac_key[0x06], hmac_key[0x07], 
+                hmac_key[0x08], hmac_key[0x09], hmac_key[0x0A], hmac_key[0x0B], 
+                hmac_key[0x0C], hmac_key[0x0D], hmac_key[0x0E], hmac_key[0x0F]);
+            printf("%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n", 
+                hmac_key[0x10], hmac_key[0x11], hmac_key[0x12], hmac_key[0x13],
+                hmac_key[0x14], hmac_key[0x15], hmac_key[0x16], hmac_key[0x17], 
+                hmac_key[0x18], hmac_key[0x19], hmac_key[0x1A], hmac_key[0x1B], 
+                hmac_key[0x1C], hmac_key[0x1D], hmac_key[0x1E], hmac_key[0x1F]);
+
             int key0 = register_fake_key((const char *) &xts_key);
             int key1 = register_fake_key((const char *) &hmac_key);
             output->keyHandle0 = IDX_TO_HANDLE(key0);
             output->keyHandle1 = IDX_TO_HANDLE(key1);
 
             printf("verifySuperBlock_sceSblServiceMailbox: key0 = 0x%x (handle = 0x%x), key1 = 0x%x (handle = 0x%x)\n", key0, output->keyHandle0, key1, output->keyHandle1);
+            output->res = 0;
+            ret = 0;
         }
     }
 
     return ret;
+}
+
+struct ccp_msg
+{
+    uint64_t unk_00h;
+    uint64_t unk_08h;
+    uint64_t unk_10h;
+    uint64_t unk_18h;
+    uint64_t unk_20h;
+    uint64_t unk_28h;
+    uint64_t unk_30h;
+    uint64_t unk_38h;
+    uint64_t unk_40h;
+    uint64_t unk_48h;
+    uint64_t unk_50h;
+    uint64_t unk_58h;
+    uint64_t unk_60h;
+    uint64_t unk_68h;
+    uint64_t unk_70h;
+    uint64_t unk_78h;
+    uint64_t unk_80h;
+    uint64_t unk_88h;
+    uint64_t unk_90h;
+    uint64_t unk_98h;
+    uint64_t unk_A0h;
+    uint64_t unk_A8h;
+    uint64_t unk_B0h;
+    uint64_t unk_C0h;
+    uint64_t unk_C8h;
+    uint64_t unk_D0h;
+    uint64_t unk_D8h;
+    uint64_t unk_E0h;
+    uint64_t unk_E8h;
+    uint64_t unk_F0h;
+    uint64_t unk_F8h;
+    uint64_t unk_100h;
+    uint64_t unk_108h;
+    uint64_t unk_110h;
+    uint64_t unk_118h;
+    uint64_t unk_120h;
+    uint64_t unk_128h;
+    uint64_t unk_130h;
+    uint64_t unk_138h;
+    struct ccp_msg *next;
+    uint64_t unk_148h;
+};
+
+struct ccp_common
+{
+    uint32_t cmd;               // 0x00
+    uint32_t status;            // 0x10
+};
+
+struct ccp_hmac
+{
+    struct ccp_common common;   // 0x00
+    uint64_t data_size;         // 0x08
+    void *data;                 // 0x10
+    uint64_t data_size_bits;    // 0x18
+    union {                     // 0x20
+        uint16_t keygen_index;
+        uint8_t hash[0x20];
+    };
+    char unk_40h[0x60];         // 0x40
+    union {                     // 0xA0
+        uint32_t key_index;     
+        uint8_t key[0x40];
+    };
+    char unk_E0h[0x50];         // 0xE0
+    uint64_t key_size;          // 0x130
+};
+
+struct ccp_xts
+{
+    struct ccp_common common;   // 0x00
+    uint32_t num_sectors;       // 0x08
+    void *in_data;              // 0x10
+    void *out_data;             // 0x18
+    uint64_t start_sector;      // 0x20
+    union {                     // 0x28
+        uint32_t key_index;
+        uint8_t key[0x20];
+    };
+};
+
+int sceSblServiceCryptAsync_hook(void *async_req)
+{
+    struct ccp_common *msg;
+
+    auto printf = (void (*)(const char *fmt, ...)) kdlsym(KERNEL_SYM_PRINTF);
+    auto sceSblServiceCryptAsync = (int (*)(void *req)) kdlsym(KERNEL_SYM_SCE_SBL_SERVICE_CRYPT_ASYNC);
+    auto Sha256Hmac = (void (*)(void *hash, void *data, size_t data_sz, void *key, size_t key_size)) kdlsym(KERNEL_SYM_SHA256_HMAC);
+    auto sceSblFinalizeCryptAsync = (void (*)(void *msg, int status)) kdlsym(KERNEL_SYM_SCE_SBL_FINALIZE_CRYPT_ASYNC);
+
+    msg = (struct ccp_common *) (*(uint64_t *) (async_req));
+    printf("sceSblServiceCryptAsync_hook: msg = %p, before (msg->cmd = 0x%x)\n", msg, msg->cmd);
+
+    if ((msg->cmd & 0x7FFFFFFF) == 0x9132000) { // SHA256 HMAC with key handle
+        struct ccp_hmac *hmac_msg = (struct ccp_hmac *) msg;
+        int idx = HANDLE_TO_IDX(hmac_msg->key_index);
+        printf("sceSblServiceCryptAsync_hook: SHA256 hmac key idx = 0x%x\n", idx);
+
+        if (idx >= 0) {
+            get_fake_key(idx, (char *) &hmac_msg->key);
+            hmac_msg->common.cmd &= ~(1 << 20);
+            hmac_msg->key_size = 0x20;
+        }
+
+        printf("sceSblServiceCryptAsync_hook: cmd = 0x%x\n", msg->cmd);
+        printf("%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n", 
+            hmac_msg->key[0x00], hmac_msg->key[0x01], hmac_msg->key[0x02], hmac_msg->key[0x03],
+            hmac_msg->key[0x04], hmac_msg->key[0x05], hmac_msg->key[0x06], hmac_msg->key[0x07], 
+            hmac_msg->key[0x08], hmac_msg->key[0x09], hmac_msg->key[0x0A], hmac_msg->key[0x0B], 
+            hmac_msg->key[0x0C], hmac_msg->key[0x0D], hmac_msg->key[0x0E], hmac_msg->key[0x0F]);
+        printf("%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n", 
+            hmac_msg->key[0x10], hmac_msg->key[0x11], hmac_msg->key[0x12], hmac_msg->key[0x13],
+            hmac_msg->key[0x14], hmac_msg->key[0x15], hmac_msg->key[0x16], hmac_msg->key[0x17], 
+            hmac_msg->key[0x18], hmac_msg->key[0x19], hmac_msg->key[0x1A], hmac_msg->key[0x1B], 
+            hmac_msg->key[0x1C], hmac_msg->key[0x1D], hmac_msg->key[0x1E], hmac_msg->key[0x1F]);
+        printf("%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n", 
+            hmac_msg->key[0x20], hmac_msg->key[0x21], hmac_msg->key[0x22], hmac_msg->key[0x23],
+            hmac_msg->key[0x24], hmac_msg->key[0x25], hmac_msg->key[0x26], hmac_msg->key[0x27], 
+            hmac_msg->key[0x28], hmac_msg->key[0x29], hmac_msg->key[0x2A], hmac_msg->key[0x2B], 
+            hmac_msg->key[0x2C], hmac_msg->key[0x2D], hmac_msg->key[0x2E], hmac_msg->key[0x2F]);
+        printf("%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n", 
+            hmac_msg->key[0x30], hmac_msg->key[0x31], hmac_msg->key[0x32], hmac_msg->key[0x33],
+            hmac_msg->key[0x34], hmac_msg->key[0x35], hmac_msg->key[0x36], hmac_msg->key[0x37], 
+            hmac_msg->key[0x38], hmac_msg->key[0x39], hmac_msg->key[0x3A], hmac_msg->key[0x3B], 
+            hmac_msg->key[0x3C], hmac_msg->key[0x3D], hmac_msg->key[0x3E], hmac_msg->key[0x3F]);
+
+        Sha256Hmac(hmac_msg->hash, hmac_msg->data, hmac_msg->data_size, hmac_msg->key, 0x20);
+        sceSblFinalizeCryptAsync((void *) hmac_msg, 0);
+        return 0;
+    } else if ((msg->cmd & 0x7FFFF7FF) == 0x2108000) { // AES-XTS with key handle
+        struct ccp_xts *xts_msg = (struct ccp_xts *) msg;
+        int idx = HANDLE_TO_IDX(xts_msg->key_index);
+        printf("sceSblServiceCryptAsync_hook: AES-XTS key idx = 0x%x\n", idx);
+
+        if (idx >= 0) {
+            get_fake_key(idx, (char *) &xts_msg->key);
+            xts_msg->common.cmd &= ~(1 << 20);
+        }
+
+        printf("sceSblServiceCryptAsync_hook: cmd = 0x%x\n", msg->cmd);
+        printf("%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n", 
+            xts_msg->key[0x00], xts_msg->key[0x01], xts_msg->key[0x02], xts_msg->key[0x03],
+            xts_msg->key[0x04], xts_msg->key[0x05], xts_msg->key[0x06], xts_msg->key[0x07], 
+            xts_msg->key[0x08], xts_msg->key[0x09], xts_msg->key[0x0A], xts_msg->key[0x0B], 
+            xts_msg->key[0x0C], xts_msg->key[0x0D], xts_msg->key[0x0E], xts_msg->key[0x0F]);
+        printf("%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n", 
+            xts_msg->key[0x10], xts_msg->key[0x11], xts_msg->key[0x12], xts_msg->key[0x13],
+            xts_msg->key[0x14], xts_msg->key[0x15], xts_msg->key[0x16], xts_msg->key[0x17], 
+            xts_msg->key[0x18], xts_msg->key[0x19], xts_msg->key[0x1A], xts_msg->key[0x1B], 
+            xts_msg->key[0x1C], xts_msg->key[0x1D], xts_msg->key[0x1E], xts_msg->key[0x1F]);
+    }
+
+    return sceSblServiceCryptAsync(async_req);
 }
 
 void apply_fpkg_hooks()
@@ -306,4 +489,26 @@ void apply_fpkg_hooks()
 
     printf("[HEN] [FPKG] sceSblPfsVerifySuperBlock() -> sceSblServiceMailbox()\n");
     install_hook(HOOK_FPKG_PFS_VERIFY_SUPER_BLOCK_CALL_SCE_SBL_SERVICE_MAILBOX, (void *) &verifySuperBlock_sceSblServiceMailbox);
+
+    //printf("[HEN] [FPKG] sceSblServiceCryptAsync() -> ccpMsgEnqueue()\n");
+    //install_hook(HOOK_FPKG_SCE_SBL_SERVICE_CRYPT_ASYNC_CALL_CCP_MSG_ENQUEUE, (void *) &sceSblServiceCryptAsync_ccpMsgEnqueue);
+
+    // Install hook on all calls to sceSblServiceCryptAsync()
+    printf("[HEN] [FPKG] installing hooks to sceSblServiceCryptAsync() [0x%lx, 0x%lx]\n", ktext(0), kdlsym(KERNEL_SYM_TEXT_END));
+    for (uint64_t scan_ptr = ktext(0); scan_ptr < kdlsym(KERNEL_SYM_TEXT_END); scan_ptr++) {
+        uint8_t *scan = (uint8_t *) scan_ptr;
+        int32_t target_rel32;
+        int32_t rel32;
+
+        if (scan[0] == 0xE8) {
+            target_rel32 = (int32_t) ((uint64_t) (kdlsym(KERNEL_SYM_SCE_SBL_SERVICE_CRYPT_ASYNC)) - scan_ptr) - 5;
+            rel32 = *(int32_t *) (scan + 1);
+
+            if (rel32 == target_rel32) {
+                install_raw_hook(scan_ptr, (void *) &sceSblServiceCryptAsync_hook);
+            }
+        }
+    }
+
+    printf("[HEN] [FPKG] done\n");
 }

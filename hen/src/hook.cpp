@@ -43,6 +43,28 @@ struct hook *find_hook(hook_id id)
     return 0;
 }
 
+int install_raw_hook(uint64_t call_addr, void *func)
+{
+    uint64_t call_install;
+    int32_t call_rel32;
+
+    auto printf = (void (*)(const char *fmt, ...)) kdlsym(KERNEL_SYM_PRINTF);
+
+    printf("install_raw_hook: call_addr = 0x%llx, func = %p\n", call_addr, func);
+
+    // Calculate rel32
+    call_rel32  = (int32_t) ((uint64_t) (func) - call_addr) - 5; // Subtract 5 for call opcodes
+
+    printf("install_raw_hook: call_rel32=0x%x\n", call_rel32);
+
+    // Install hook
+    printf("hook_func_call: installing hook to 0x%lx (rel32=0x%x)\n", call_addr, call_rel32);
+
+    call_install = call_addr + 1;
+    *(uint32_t *) (call_install) = call_rel32;
+    return 0;
+}
+
 int install_hook(hook_id id, void *func)
 {
     struct hook *hook_info;

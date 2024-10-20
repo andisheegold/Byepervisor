@@ -2,6 +2,7 @@
 #define OFFSETS_2_50_H
 
 uint64_t g_sym_map_250[] = {
+    0x0B70000,          // KERNEL_SYM_TEXT_END
     0x4CB3B50,          // KERNEL_SYM_DMPML4I
     0x4CB3B54,          // KERNEL_SYM_DMPDPI
     0x4CB38AC,          // KERNEL_SYM_PML4PML4I
@@ -32,6 +33,8 @@ uint64_t g_sym_map_250[] = {
     0x067AB40,          // KERNEL_SYM_FPU_KERN_LEAVE
     0x03CDAB0,          // KERNEL_SYM_LACACRYPTO_RSADPCRT_CORE
     0x0825D20,          // KERNEL_SYM_SHA256_HMAC
+    0x02E5690,          // KERNEL_SYM_SCE_SBL_SERVICE_CRYPT_ASYNC
+    0x07267C0,          // KERNEL_SYM_SCE_SBL_FINALIZE_CRYPT_ASYNC
 };
 
 #endif // OFFSETS_2_50_H
