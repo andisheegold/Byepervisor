@@ -155,6 +155,12 @@ struct patch g_kernel_patches_250[] = {
         "\xB8\x00\x00\x00\x00",
         5
     }, 
+    {
+        "test",
+        0x84B38A,
+        "\x31\xC0",
+        2
+    }
 };
 
 #endif // PATCHES_2_50_H
