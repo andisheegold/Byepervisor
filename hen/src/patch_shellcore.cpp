@@ -9,23 +9,39 @@
 
 #include "shellcore_patches/2_50.h"
 
+/**
+ * @brief Implementation of read/write memory for a process (from kernel)
+ * 
+ * @param p struct proc* Process to read/write to/from
+ * @param procAddr off_t Address to read/write to/from
+ * @param sz size_t Size to read/write
+ * @param kAddr void* Kernel buffer
+ * @param ioSz size_t io size
+ * @param write int32_t 1 for write, 0 for read
+ * @return int 0 on success, error otherwise
+ */
 int proc_rw_mem(void *p, off_t procAddr, size_t sz, void *kAddr, size_t *ioSz, int write)
 {
+    // Assign kdlsym
     auto printf = (void (*)(const char *fmt, ...)) kdlsym(KERNEL_SYM_PRINTF);
     auto debug_rwmem = (int (*)(void *proc, struct uio *uio)) kdlsym(KERNEL_SYM_RW_MEM);
 
-    printf("proc_rw_mem(%p, 0x%lx, %lx, %p, %p, %d)\n", p, procAddr, sz, kAddr, ioSz, write);
+    // Debug logging
+    // printf("proc_rw_mem(%p, 0x%lx, %lx, %p, %p, %d)\n", p, procAddr, sz, kAddr, ioSz, write);
 
+    // Validate process
     if (!p) {
         printf("no proc\n");
         return -1;
     }
 
+    // Validate process address, and kernel address
     if (!procAddr || !kAddr) {
         printf("no addrs\n");
         return -1;
     }
 
+    // Validate size
     if (!sz) {
         if (ioSz) {
             *ioSz = 0;
@@ -47,9 +63,10 @@ int proc_rw_mem(void *p, off_t procAddr, size_t sz, void *kAddr, size_t *ioSz, i
     _uio.uio_rw = (write) ? UIO_WRITE : UIO_READ;
     _uio.uio_td = curthread;
 
-    printf("debug_rwmem: try\n");
+    // Read/Write memory (ignoring faults)
+    // printf("debug_rwmem: try\n");
     int ret = debug_rwmem(p, &_uio);
-    printf("debug_rwmem: ret = 0x%x\n", ret);
+    // printf("debug_rwmem: ret = 0x%x\n", ret);
 
     if (ioSz) {
         *ioSz = (sz - _uio.uio_resid);
@@ -58,6 +75,12 @@ int proc_rw_mem(void *p, off_t procAddr, size_t sz, void *kAddr, size_t *ioSz, i
     return ret;
 }
 
+/**
+ * @brief Gets the shellcore base address for patching from kernel->user space
+ * 
+ * @param shellcore_proc struct proc* Shellcore process
+ * @return uint64_t Base address of shellcore, or 0 on error
+ */
 uint64_t shellcore_get_addr(void *shellcore_proc)
 {
     void *vm_map;
@@ -68,17 +91,22 @@ uint64_t shellcore_get_addr(void *shellcore_proc)
     char *entry_name;
     uint64_t addr;
 
+    // kdlsym function pointers
     auto printf                 = (void (*)(const char *fmt, ...)) kdlsym(KERNEL_SYM_PRINTF);
     auto _vm_map_lock_read      = (void (*)(void *map, const char *file, int line)) kdlsym(KERNEL_SYM_VM_MAP_LOCK_READ);
 	auto _vm_map_unlock_read    = (void (*)(void *map, const char *file, int line)) kdlsym(KERNEL_SYM_VM_MAP_UNLOCK_READ);
     auto _vm_map_lookup_entry   = (int (*)(void *map, uint64_t offset, void *entry)) kdlsym(KERNEL_SYM_VM_MAP_LOOKUP_ENTRY);
 
+    // Get the process vm map
     vm_map = get_proc_vmmap(shellcore_proc);
-    printf("[HEN] [SHELLCORE] vm_map = %p\n", vm_map);
+    // printf("[HEN] [SHELLCORE] vm_map = %p\n", vm_map);
 
-    _vm_map_lock_read(vm_map, "", 0);
+    // Lock the vm map
+    _vm_map_lock_read(vm_map, "", 0);    
 
+    // Lookup the vm map entry
     if (_vm_map_lookup_entry(vm_map, 0, &entry) != 0) {
+        // On failure log and unlock
         printf("[HEN] [SHELLCORE] Failed to lookup first entry\n");
         _vm_map_unlock_read(vm_map, "", 0);
         return 0;
@@ -87,6 +115,7 @@ uint64_t shellcore_get_addr(void *shellcore_proc)
     first_entry = entry;
     addr = 0;
 
+    // Iterate over all of the entries and check the name, offset, and protection
     do {
         entry_name  = (char *) ((char *) (entry) + VM_ENTRY_OFFSET_NAME);
         entry_start = *(uint64_t *) ((char *) (entry) + VM_ENTRY_OFFSET_START);
@@ -104,10 +133,17 @@ uint64_t shellcore_get_addr(void *shellcore_proc)
         }
     } while (entry != NULL && entry != first_entry);
 
+    // Unlock the vm map
     _vm_map_unlock_read(vm_map, "", 0);
+
+    // return the found address
     return addr;
 }
 
+/**
+ * @brief Applies the shellcore patches in memory
+ * 
+ */
 void apply_shellcore_patches()
 {
     uint64_t fw_ver;
@@ -117,6 +153,7 @@ void apply_shellcore_patches()
     uint64_t shellcore_base_addr;
     int num_patches;
 
+    // Get kdlsym function pointers
     auto printf = (void (*)(const char *fmt, ...)) kdlsym(KERNEL_SYM_PRINTF);
 
     // Resolve patches for this fw

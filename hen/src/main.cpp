@@ -18,6 +18,13 @@ extern "C" {
     int kernel_main(void *td, struct args *args);
 }
 
+/**
+ * @brief The kernel sysent entrypoint
+ * 
+ * @param td struct thread* The calling thread
+ * @param args struct args* Syscall arguments
+ * @return int 0 on success, error otherwise
+ */
 int kernel_main(void *td, struct args *args)
 {
     int ret;
@@ -25,6 +32,7 @@ int kernel_main(void *td, struct args *args)
     curthread = td;
     init_kdlsym(args->fw, args->kernel_base);
 
+    // kdlsym assignments
     auto printf = (void (*)(const char *fmt, ...)) kdlsym(KERNEL_SYM_PRINTF);
 
     // Reset hooks before installing new ones
@@ -52,8 +60,3 @@ int kernel_main(void *td, struct args *args)
 
     return 0;
 }
-
-// extern "C" {
-//     __attribute__ ((section(".text.prologue")))
-//     int _start(void *td, struct args *args) { return kernel_main(td, args); }
-// }

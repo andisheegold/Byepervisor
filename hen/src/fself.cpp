@@ -41,31 +41,6 @@ extern "C" {
     static volatile int enableHook6 = 1;
 }
 
-// SelfContext* getSelfContextByServiceId(uint32_t serviceId) {
-//     auto ctxTable            = (SelfContext *) kdlsym(KERNEL_SYM_CTXTABLE);
-//     auto ctxStatus           = (int *) kdlsym(KERNEL_SYM_CTXSTATUS);
-//     auto ctxTableMtx         = (void *) kdlsym(KERNEL_SYM_CTXTABLE_MTX);
-//     auto mtx_lock_flags      = (void(*)(void *m)) kdlsym(KERNEL_SYM_MTX_LOCK);
-//     auto mtx_unlock_flags    = (void(*)(void *m)) kdlsym(KERNEL_SYM_MTX_UNLOCK);
-
-//     mtx_lock(ctxTableMtx);
-//     for (int i = 0; i < 4; i++) {
-//         // 0 = uninit, 1 = header unverified, 2 = is loadable, 3 = active, 4 = in-use?
-//         if (ctxStatus[i] != 3 && ctxStatus[i] != 4) {
-//             continue;
-//         }
-
-//         auto ctx = &ctxTable[i];
-//         if (ctx->unk1C == serviceId) {
-//             mtx_unlock(ctxTableMtx);
-//             return ctx;
-//         }
-//     }
-
-//     mtx_unlock(ctxTableMtx);
-//     return nullptr;
-// }
-
 SelfContext* getSelfContextByServiceId(uint32_t serviceId) {
     auto ctxTable       = (SelfContext *) kdlsym(KERNEL_SYM_CTXTABLE);
     

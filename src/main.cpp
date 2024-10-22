@@ -33,6 +33,7 @@ extern "C"
     int __sys_is_development_mode();
 }
 
+#pragma region Testing code
 // void dump_self_to_client(int client)
 // {
 //     int ret;
@@ -52,43 +53,6 @@ extern "C"
 //     close(client);
 //     SOCK_LOG("[+] Done\n");
 // }
-
-void dump_kernel_to_client(int client)
-{
-    int write_ret;
-    char data_buf[0x4000];
-    uint64_t qword;
-
-    SOCK_LOG("[+] Dumping kernel to client\n");
-
-    // Write firmware version
-    qword = kernel_get_fw_version() & 0xFFFF0000;
-    if (write(client, &qword, sizeof(qword)) != sizeof(qword)) {
-        SOCK_LOG("[!] Failed to send FW version\n");
-        close(client);
-        return;
-    }
-
-    // Write kernel base address
-    qword = ktext(0);
-    if (write(client, &qword, sizeof(qword)) != sizeof(qword)) {
-        SOCK_LOG("[!] Failed to send kernel base\n");
-        close(client);
-        return;
-    }
-
-    // Write kernel .text + data
-    for (uint64_t addr = ktext(0); ; addr += sizeof(data_buf)) {
-        kernel_copyout(addr, &data_buf, sizeof(data_buf));
-        write_ret = write(client, &data_buf, sizeof(data_buf));
-        if (write_ret < 0)
-            break;
-    }
-
-    // We shouldn't reach here, we should crash
-    close(client);
-    SOCK_LOG("[+] Done\n");
-}
 
 // int run_dump_server(int port)
 // {
@@ -128,6 +92,45 @@ void dump_kernel_to_client(int client)
 
 //     return 0;
 // }
+
+#pragma endregion
+
+void dump_kernel_to_client(int client)
+{
+    int write_ret;
+    char data_buf[0x4000];
+    uint64_t qword;
+
+    SOCK_LOG("[+] Dumping kernel to client\n");
+
+    // Write firmware version
+    qword = kernel_get_fw_version() & 0xFFFF0000;
+    if (write(client, &qword, sizeof(qword)) != sizeof(qword)) {
+        SOCK_LOG("[!] Failed to send FW version\n");
+        close(client);
+        return;
+    }
+
+    // Write kernel base address
+    qword = ktext(0);
+    if (write(client, &qword, sizeof(qword)) != sizeof(qword)) {
+        SOCK_LOG("[!] Failed to send kernel base\n");
+        close(client);
+        return;
+    }
+
+    // Write kernel .text + data
+    for (uint64_t addr = ktext(0); ; addr += sizeof(data_buf)) {
+        kernel_copyout(addr, &data_buf, sizeof(data_buf));
+        write_ret = write(client, &data_buf, sizeof(data_buf));
+        if (write_ret < 0)
+            break;
+    }
+
+    // We shouldn't reach here, we should crash
+    close(client);
+    SOCK_LOG("[+] Done\n");
+}
 
 int main()
 {
@@ -190,17 +193,15 @@ int main()
 
     // Check if this is a resume state or not, if it's not, prompt for restart and exit
     if (kernel_read4(kdlsym(KERNEL_SYM_DATA_CAVE)) != 0x1337) {
+        // Notify the user that they have to suspend/resume their console
         SOCK_LOG("[+] System needs to be suspended and resumed...\n");
         flash_notification("Byepervisor\nEnter rest mode & resume");
         kernel_write4(kdlsym(KERNEL_SYM_DATA_CAVE), 0x1337);
 
-        //sceKernelSleep(3);
-
-        // suspend syscall
-        //syscall(0x26D);
         return 0;
     }
 
+    // Print out the kernel base
     SOCK_LOG("[+] Kernel base = 0x%lx\n", ktext(0));
 
     // Apply patches
@@ -209,16 +210,16 @@ int main()
         return -1;
     }
 
+    // Calculate the remaining blocks after 0x1000 segments
     uint64_t KELF_REMAINING = KELF_SZ % 0x1000;
+
+    // Calculate the number of blocks to copy
     uint64_t KELF_BLOCK_COPIES = KELF_SZ / 0x1000;
+
+    // Calculate the offset of the remaining data
     uint64_t KELF_REMAINING_START_OFFSET = KELF_BLOCK_COPIES * 0x1000;
 
-    SOCK_LOG("[!] binsz: (0x%lx), remain: (0x%lx), copies: (0x%lx), remainoff: (0x%lx).", KELF_SZ, KELF_REMAINING, KELF_BLOCK_COPIES, KELF_REMAINING_START_OFFSET); 
-
     // Copy hen into kernel code cave
-    // for (int i = 0; i < sizeof(bin2c_hen_bin); i += 0x1000) {
-    //     kernel_copyin(&bin2c_hen_bin[i], kdlsym(KERNEL_SYM_CODE_CAVE) + i, 0x1000);
-    // }
     for (uint32_t i = 0; i < KELF_SZ; i += 0x1000) {
         kernel_copyin(&KELF[i], kdlsym(KERNEL_SYM_CODE_CAVE) + i, 0x1000);
     }
@@ -226,33 +227,22 @@ int main()
         kernel_copyin(&KELF[KELF_REMAINING_START_OFFSET], kdlsym(KERNEL_SYM_CODE_CAVE) + KELF_REMAINING_START_OFFSET, KELF_REMAINING);
 
     // Install kexec syscall
-    // uint8_t test_opcodes[] = {0x48, 0xC7, 0x87, 0x08, 0x04, 0x00, 0x00, 0x01, 0xC0, 0x37, 0x13, 0x31, 0xC0, 0xC3};
-    // kernel_copyin(&test_opcodes, kdlsym(KERNEL_SYM_CODE_CAVE), 14);
-    //install_custom_syscall(0x11, 2, kdlsym(KERNEL_SYM_CODE_CAVE));
-
     SOCK_LOG("[+] Installing kexec syscall\n");
     install_kexec();
 
+    // Print out the development mode before and after jailbreak
     SOCK_LOG("[+] Bef. hook is_development_mode = 0x%x\n", __sys_is_development_mode());
 
-    // Run hen
+    // Run hen from the code cave
     int test_ret = kexec(kdlsym(KERNEL_SYM_CODE_CAVE));
-    SOCK_LOG("[+] Testing kexec: 0x%x\n", test_ret);
+    SOCK_LOG("[+] kexec returned: 0x%x\n", test_ret);
 
     SOCK_LOG("[+] Aft. hook is_development_mode = 0x%x\n", __sys_is_development_mode());
-
-    // Test hook
-    // SOCK_LOG("[+] Bef. hook is_development_mode = 0x%x\n", __sys_is_development_mode());
-    // apply_test_hook();
-    // SOCK_LOG("[+] Aft. hook is_development_mode = 0x%x\n", __sys_is_development_mode());
-
-    // SOCK_LOG("[+] Installing kernel payload (0x%lx)\n", )
 
     ret = sceKernelLoadStartModule((char *) "/data/libExample.prx", 0, NULL, 0, NULL, NULL);
     SOCK_LOG("[+] load fself: 0x%x\n", ret);
 
-    //run_self_server(9005);
-
+    // run_self_server(9005);
     // run_dump_server(9003);
     reset_mirrors();
     return 0;
