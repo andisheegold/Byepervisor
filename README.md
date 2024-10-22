@@ -11,7 +11,9 @@ This method requires a fair number of gadgets and offsets, which is the main rea
 
 **QA Flags Exploit**
 
-The primary and recommended exploit takes advantage of the fact that system Quality Assurance (QA) flags are shared between the hypervisor and the guest kernel. When the hypervisor initializes, the init code for constructing nested page tables will check QA flags for the System Level (SL) debugging flag. If this flag is set, the nested Page Table Entries (PTEs) will not have the `xotext` bit set for kernel .text pages, and further the kernel .text pages will also have the write bit set. These flags are not reinitialized by the secure loader upon resume from sleep mode, though the hypervisor is. By setting the SL flag, putting the system to sleep, and resuming, we can edit the guest kernel's pagetables to make kernel .text pages read/writable, allowing dumping of the kernel and hooks/patches.
+The primary and recommended exploit takes advantage of the fact that system Quality Assurance (QA) flags are shared between the hypervisor and the guest kernel. When the hypervisor initializes, the init code for constructing nested page tables will check QA flags for the System Level (SL) debugging flag. If this flag is set, the nested Page Table Entries (PTEs) will not have the `xotext` bit set for kernel .text pages, and further the kernel .text pages will also have the write bit set.
+
+These flags are not reinitialized by the secure loader upon resume from sleep mode, though the hypervisor is. By setting the SL flag, putting the system to sleep, and resuming, we can edit the guest kernel's pagetables to make kernel .text pages read/writable, allowing dumping of the kernel and hooks/patches.
 
 ## Important Notes
 - Currently only 2.50 FW is supported for Homebrew Enabler (HEN), support for other firmware versions will be added at a later time.
