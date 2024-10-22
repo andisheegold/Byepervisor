@@ -154,13 +154,13 @@ struct patch g_kernel_patches_250[] = {
         0x719187,
         "\xB8\x00\x00\x00\x00",
         5
-    }, 
-    {
-        "test",
-        0x84B38A,
-        "\x31\xC0",
-        2
-    }
+    }//, 
+    // {
+    //     "test",
+    //     0x85ABC9,
+    //     "\x31\xF6",
+    //     2
+    // }
 };
 
 #endif // PATCHES_2_50_H

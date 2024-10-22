@@ -1,3 +1,8 @@
+/*
+ * Credit: sleirsgoevy
+ * https://github.com/sleirsgoevy/ps4jb-payloads/blob/87f31afca6afc573d953e8343113c179a416e1b0/ps5-kstuff/uelf/fakekeys.c
+ */
+
 #include <stdint.h>
 
 #include "fkeys.h"

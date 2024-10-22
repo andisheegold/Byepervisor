@@ -191,13 +191,13 @@ int main()
     // Check if this is a resume state or not, if it's not, prompt for restart and exit
     if (kernel_read4(kdlsym(KERNEL_SYM_DATA_CAVE)) != 0x1337) {
         SOCK_LOG("[+] System needs to be suspended and resumed...\n");
-        flash_notification("Byepervisor\nEntering rest mode. resume");
+        flash_notification("Byepervisor\nEnter rest mode & resume");
         kernel_write4(kdlsym(KERNEL_SYM_DATA_CAVE), 0x1337);
 
-        sceKernelSleep(3);
+        //sceKernelSleep(3);
 
         // suspend syscall
-        syscall(0x26D);
+        //syscall(0x26D);
         return 0;
     }
 
