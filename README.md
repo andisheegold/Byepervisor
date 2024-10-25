@@ -1,7 +1,7 @@
 # Byepervisor
 ---
 ## Summary
-PS5 hypervisor exploit for <= 2.xx firmware. Two vulnerabilities and exploit chains are contained in the repo, they are independent of each other and either can be used. One exploit is provided mainly just for preservation (`/_old_jump_table_exploit`), only the primary exploit chain needs to be used.
+PS5 hypervisor exploit for <= 2.xx firmware. Two vulnerabilities and exploit chains are contained in the repo, they are independent of each other and either can be used. One exploit is provided mainly just for preservation (`/_old_jump_table_exploit`), only the primary exploit chain needs to be used (QA flags exploit).
 
 **Jump Table Exploit**
 
@@ -19,6 +19,7 @@ These flags are not reinitialized by the secure loader upon resume from sleep mo
 - Currently only 2.50 FW is supported for Homebrew Enabler (HEN), support for other firmware versions will be added at a later time.
 - The exploit payload (byepervisor.elf) will need to be sent twice, once before suspending the system and again after resuming.
 - You will have to put the system into rest mode manually yourself
+- Kernel dump from QA flags exploit will not contain hypervisor's .data region at the moment, if this is important for you, dump using the jump table exploit after porting or disable nested paging first (this is a TODO)
 
 ## Currently included
 - Kernel dumping code (commented out, running this code *will* panic the system as it will try to dump as much as it can before hitting unmapped memory)
@@ -36,6 +37,7 @@ These flags are not reinitialized by the secure loader upon resume from sleep mo
 - [ ] Support more firmwares for HEN
 - [ ] Make it so `byepervisor.elf` only needs to be sent once
 - [ ] Automatically suspend the system?
+- [ ] Patch vmcbs with QA flags exploit to dump hypervisor data
 
 ## Credits / Shouts
 - [ChendoChap](https://github.com/ChendoChap)
@@ -43,6 +45,7 @@ These flags are not reinitialized by the secure loader upon resume from sleep mo
 - [fail0verflow](https://fail0verflow.com/blog/)
 - [Znullptr](https://twitter.com/Znullptr)
 - [kiwidog](https://kiwidog.me/)
+- [sleirsgoevy](https://x.com/sleirsgoevy)
 
 ## Discord
 Those interested in contributing to PS5 research/dev can join a discord I have setup [here](https://discord.gg/kbrzGuH3F6).
