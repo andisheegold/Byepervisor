@@ -142,6 +142,10 @@ int main()
     // Print out the kernel base
     SOCK_LOG("[+] Kernel base = 0x%lx\n", ktext(0));
 
+    // run_dump_server(9003);
+    // reset_mirrors();
+    // return 0;
+
     // Apply patches
     if (apply_kernel_patches() != 0) {
         SOCK_LOG("[!] Applying kernel patches failed, firmware likely not supported\n");
@@ -178,7 +182,6 @@ int main()
     SOCK_LOG("[+] Aft. hook is_development_mode = 0x%x\n", __sys_is_development_mode());
 
     run_self_server(9004);
-    // run_dump_server(9003);
     reset_mirrors();
     return 0;
 }
