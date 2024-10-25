@@ -4,7 +4,7 @@
 /*
  * Enable debug logging via TCP connection to PC
  */
-#define PC_DEBUG_ENABLED                    1
+#define PC_DEBUG_ENABLED                    0
 
 /*
  * PC IP address for debug logging
