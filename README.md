@@ -37,7 +37,7 @@ This exploit payload is built using the [PS5-Payload-Dev SDK](https://github.com
 5. Send `byepervisor.elf` again (if you use John Tornblom's ELF loader, the ELF loader should continue to accept payloads after resume, if not the UMTX exploit will need to be run again)
 
 ## Future work
-- [ ] Support more firmwares for HEN
+- [ ] Support more firmwares (offsets)
 - [ ] Make it so `byepervisor.elf` only needs to be sent once
 - [ ] Automatically suspend the system?
 - [ ] Patch vmcbs with QA flags exploit to dump hypervisor data
