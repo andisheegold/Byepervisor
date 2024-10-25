@@ -94,7 +94,7 @@ uint64_t shellcore_get_addr(void *shellcore_proc)
     // kdlsym function pointers
     auto printf                 = (void (*)(const char *fmt, ...)) kdlsym(KERNEL_SYM_PRINTF);
     auto _vm_map_lock_read      = (void (*)(void *map, const char *file, int line)) kdlsym(KERNEL_SYM_VM_MAP_LOCK_READ);
-	auto _vm_map_unlock_read    = (void (*)(void *map, const char *file, int line)) kdlsym(KERNEL_SYM_VM_MAP_UNLOCK_READ);
+    auto _vm_map_unlock_read    = (void (*)(void *map, const char *file, int line)) kdlsym(KERNEL_SYM_VM_MAP_UNLOCK_READ);
     auto _vm_map_lookup_entry   = (int (*)(void *map, uint64_t offset, void *entry)) kdlsym(KERNEL_SYM_VM_MAP_LOOKUP_ENTRY);
 
     // Get the process vm map

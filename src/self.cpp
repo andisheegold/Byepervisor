@@ -439,23 +439,23 @@ int run_self_server(int port)
     bzero(&sockaddr, sizeof(sockaddr));
 
     sockaddr.sin_family = AF_INET;
-	sockaddr.sin_port = htons(port);
-	sockaddr.sin_addr.s_addr = INADDR_ANY;
+    sockaddr.sin_port = htons(port);
+    sockaddr.sin_addr.s_addr = INADDR_ANY;
 
     if (bind(s, (const struct sockaddr *) &sockaddr, sizeof(sockaddr)) < 0) {
         SOCK_LOG("[!] failed to bind server\n");
-		return -1;
+        return -1;
     }
 
-	if (listen(s, 5) < 0) {
+    if (listen(s, 5) < 0) {
         SOCK_LOG("[!] failed to listen on server\n");
-		return -1;
+        return -1;
     }
 
     SOCK_LOG("[SRV] [SELF] self dump server is now running (port: %d)...\n", port);
 
     // Accept clients
-	for (;;) {
+    for (;;) {
         if (g_die) {
             SOCK_LOG("[SRV] [SELF] rpc server is shutting down...\n");
             close(s);

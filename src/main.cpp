@@ -33,68 +33,6 @@ extern "C"
     int __sys_is_development_mode();
 }
 
-#pragma region Testing code
-// void dump_self_to_client(int client)
-// {
-//     int ret;
-//     uint64_t size;
-//     int write_ret;
-//     void *libkernel_data;
-
-//     // Try to decrypt libkernel
-//     ret = decrypt_self("/system/common/lib/libkernel.sprx", &libkernel_data, &size);
-//     SOCK_LOG("[+] decrypt test: 0x%x (%p, size = 0x%lx)\n", ret, libkernel_data, size);
-
-//     write_ret = write(client, libkernel_data, size);
-//     if (write_ret < 0)
-//         return;
-//     SOCK_LOG("[+] wrote 0x%x bytes\n", write_ret);
-
-//     close(client);
-//     SOCK_LOG("[+] Done\n");
-// }
-
-// int run_dump_server(int port)
-// {
-//     int s;
-//     int client;
-//     struct sockaddr_in sockaddr;
-
-//     s = socket(AF_INET, SOCK_STREAM, 0);
-//     bzero(&sockaddr, sizeof(sockaddr));
-
-//     sockaddr.sin_family = AF_INET;
-// 	sockaddr.sin_port = htons(port);
-// 	sockaddr.sin_addr.s_addr = INADDR_ANY;
-
-//     if (bind(s, (const struct sockaddr *) &sockaddr, sizeof(sockaddr)) < 0) {
-//         SOCK_LOG("[!] failed to bind server\n");
-// 		return -1;
-//     }
-
-// 	if (listen(s, 5) < 0) {
-//         SOCK_LOG("[!] failed to listen on server\n");
-// 		return -1;
-//     }
-
-//     SOCK_LOG("[SRV] dump server is now running (port: %d)...\n", port);
-
-//     // Accept clients
-// 	for (;;) {
-//         client = accept(s, 0, 0);
-//         SOCK_LOG("[SRV] accepted a client = %d\n", client);
-
-//         if (client > 0) {
-//             //dump_kernel_to_client(client);
-//             dump_self_to_client(client);
-//         }
-//     }
-
-//     return 0;
-// }
-
-#pragma endregion
-
 void dump_kernel_to_client(int client)
 {
     int write_ret;
@@ -135,8 +73,8 @@ void dump_kernel_to_client(int client)
 int main()
 {
     int ret;
-	int debug_sock = -1;
-	struct sockaddr_in addr;
+    int debug_sock = -1;
+    struct sockaddr_in addr;
     uint64_t kernel_pmap;
     uint64_t pte_addr;
     uint64_t pde_addr;
@@ -146,26 +84,26 @@ int main()
     // Set shellcore auth ID
     kernel_set_ucred_authid(getpid(), 0x4800000000000007);
 
-	// Open a debug socket if enabled
-	if (PC_DEBUG_ENABLED) {
-		debug_sock = socket(AF_INET, SOCK_STREAM, 0);
-		if (debug_sock < 0) {
-			return 0xDEAD0001;
-		}
+    // Open a debug socket if enabled
+    if (PC_DEBUG_ENABLED) {
+        debug_sock = socket(AF_INET, SOCK_STREAM, 0);
+        if (debug_sock < 0) {
+            return 0xDEAD0001;
+        }
 
-		inet_pton(AF_INET, PC_DEBUG_IP, &addr.sin_addr);
-		addr.sin_family = AF_INET;
-		addr.sin_len    = sizeof(addr);
-		addr.sin_port   = htons(PC_DEBUG_PORT);
+        inet_pton(AF_INET, PC_DEBUG_IP, &addr.sin_addr);
+        addr.sin_family = AF_INET;
+        addr.sin_len    = sizeof(addr);
+        addr.sin_port   = htons(PC_DEBUG_PORT);
 
-		ret = connect(debug_sock, (const struct sockaddr *) &addr, sizeof(addr));
-		if (ret < 0) {
-			return 0xDEAD0002;
-		}
+        ret = connect(debug_sock, (const struct sockaddr *) &addr, sizeof(addr));
+        if (ret < 0) {
+            return 0xDEAD0002;
+        }
 
-		SOCK_LOG("[!] debug socket connected\n");
+        SOCK_LOG("[!] debug socket connected\n");
         g_debug_sock = debug_sock;
-	}
+    }
 
     // Jailbreak
     kernel_set_proc_rootdir(getpid(), kernel_get_root_vnode());
@@ -239,10 +177,7 @@ int main()
 
     SOCK_LOG("[+] Aft. hook is_development_mode = 0x%x\n", __sys_is_development_mode());
 
-    ret = sceKernelLoadStartModule((char *) "/data/libExample.prx", 0, NULL, 0, NULL, NULL);
-    SOCK_LOG("[+] load fself: 0x%x\n", ret);
-
-    // run_self_server(9005);
+    run_self_server(9004);
     // run_dump_server(9003);
     reset_mirrors();
     return 0;
