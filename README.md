@@ -26,12 +26,15 @@ These flags are not reinitialized by the secure loader upon resume from sleep mo
 - Code to decrypt system library SELFs over TCP
 - Homebrew enabler (HEN) for 2.50 firmware (fself+fpkg)
 
+## Build notes
+This exploit payload is built using the [PS5-Payload-Dev SDK](https://github.com/ps5-payload-dev/sdk). Note also that the build for `hen/` is slightly special, as it gets compiled to a flat binary thats copied into a kernel code cave. The entirety of code in `hen/` runs in supervisor/kernel mode.
+
 ## How to use
 1. Run the UMTX exploit chain in webkit or BD-J and run an ELF loader
 2. Send `byepervisor.elf`
 3. Put the system into rest mode
 4. Power system back on
-5. Send `byepervisor.elf` again (if you use John Tornblom's ELF loader, this should continue to run after resume, if not the UMTX exploit will need to be run again)
+5. Send `byepervisor.elf` again (if you use John Tornblom's ELF loader, the ELF loader should continue to accept payloads after resume, if not the UMTX exploit will need to be run again)
 
 ## Future work
 - [ ] Support more firmwares for HEN
