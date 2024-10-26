@@ -129,6 +129,13 @@ int main()
         }
     }
 
+  // Check if this is a resume state or not, if it is, notify the user that they had success
+  if (kernel_read4(kdlsym(KERNEL_SYM_DATA_CAVE)) = 0x1337) {
+      flash_notification("Byepervisor is done successfully, bye bye Hypervisor:)");
+      
+        return 0;
+    }
+      
     // Check if this is a resume state or not, if it's not, prompt for restart and exit
     if (kernel_read4(kdlsym(KERNEL_SYM_DATA_CAVE)) != 0x1337) {
         // Notify the user that they have to suspend/resume their console
