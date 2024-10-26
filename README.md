@@ -3,7 +3,7 @@
 ## Summary
 PS5 hypervisor exploit for <= 2.xx firmware. Two vulnerabilities and exploit chains are contained in the repo, they are independent of each other and either can be used. One exploit is provided mainly just for preservation (`/_old_jump_table_exploit`), only the primary exploit chain needs to be used (QA flags exploit).
 
-**This research was presented at hardwear.io NL 2024, slides can be found [here](https://github.com/PS5Dev/Byepervisor/blob/main/Byepervisor_%20Breaking%20PS5%20Hypervisor%20Security.pdf). The talk will be published soon.
+**This research was presented at hardwear.io NL 2024, slides can be found [here](https://github.com/PS5Dev/Byepervisor/blob/main/Byepervisor_%20Breaking%20PS5%20Hypervisor%20Security.pdf). The talk will be published soon.**
 
 **Jump Table Exploit**
 
